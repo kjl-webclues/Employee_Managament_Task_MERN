@@ -13,8 +13,8 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 
 const App = () => {
 
-  const userState = useSelector(state => state.userState)
-  console.log(userState);
+  const loginStatus = useSelector(state => state.loginStatus)
+  //console.log(loginStatus);
   
   return (
      <>      
@@ -23,9 +23,9 @@ const App = () => {
             <Route exact path='/' component={Home}></Route>  
             <Route exact path='/registerpage' component={RegForm}></Route>        
             <Route exact path='/editUser/:id' component={RegForm}></Route>            
-            <ProtectedRoute exact path='/loginpage' component={LoginForm} isAuth={!userState}></ProtectedRoute>
-            <ProtectedRoute exact path='/dashbord' component={Dashbord} isAuth={userState} ></ProtectedRoute>
-            <ProtectedRoute exact path='/Logout' component={Logout} isAuth={userState}></ProtectedRoute>
+            <ProtectedRoute exact path='/loginpage' component={LoginForm} isAuth={!loginStatus}></ProtectedRoute>
+            <ProtectedRoute exact path='/dashbord' component={Dashbord} isAuth={loginStatus} ></ProtectedRoute>
+            <ProtectedRoute exact path='/Logout' component={Logout} isAuth={loginStatus}></ProtectedRoute>
         </Switch>      
     </>
   );

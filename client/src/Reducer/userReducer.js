@@ -1,6 +1,6 @@
 const initialState = {
     userData: [],
-    userState: true,
+    loginStatus: false,
     userList: [],
     countryData: [],
     stateData: [],
@@ -16,9 +16,8 @@ const userReducer = (state = initialState, action) => {
         
         case "LOGIN_USER":
             return {
-                ...state, 
-                userData: [action.payload],
-                userState: true
+                ...state,
+                loginStatus: true
             }
         
         case "GET_USER":
@@ -41,14 +40,13 @@ const userReducer = (state = initialState, action) => {
         
         case "DELETE_USER":
             return {
-                ...state,
-                userState: false
+                ...state
             }
         
         case "LOGOUT_USER":
             return {
                 ...state,
-                userState: false
+                loginStatus: false
             }
         case "COUNTRY":
             return {

@@ -5,6 +5,7 @@ import {login_User} from '../Actions/userAction'
 import { useHistory } from "react-router-dom";
 
 
+
 const LoginForm = () => {
     
     const Apidispatch = useDispatch();
@@ -17,10 +18,9 @@ const LoginForm = () => {
             password: ''
         },
         onSubmit: (values) => {
-            console.log("values", values);
-            // for employee login             
+            // for employee login 
+            history.push('/dashbord')                       
             Apidispatch(login_User(values))
-            history.push('/dashbord')           
         }
     })
  
@@ -42,7 +42,7 @@ const LoginForm = () => {
                             onChange={formik.handleChange}
                             value={formik.values.password}
                         /><br />
-                        <button className='login' type='submit'>Login</button>                    
+                        <button className='login' type='submit' >Login</button>                    
                     </form>
             </div>
         </>

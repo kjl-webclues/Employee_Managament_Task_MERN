@@ -3,7 +3,7 @@ import { NavLink, useHistory } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { get_User, delete_User} from '../Actions/userAction';
 import { Pagination } from '@material-ui/lab';
-import  debounce  from 'lodash.debounce';
+import debounce from 'lodash.debounce';
 
 const Dashbord = () => {
 
@@ -26,8 +26,7 @@ const Dashbord = () => {
     //////////////// For Delete User Api ////////////////
     const deleteUser = (id) => {        
         dispatch(delete_User(id))
-        window.location.reload();
-        history.push('/registerpage')
+        window.confirm("Are You Sure?")
     }
 
     //////////////// For Get Request ////////////////
@@ -51,9 +50,10 @@ const Dashbord = () => {
             </div>
 
             <div className='searchbar'>
-                <input type="text"  onChange={(e) => handleSearch(e.target.value)} />
+                <input type="text" onChange={(e) => handleSearch(e.target.value)} />        
             </div>
 
+            
             <div>                    
                 <button onClick={() => setRequest("asc")}>Ascending</button>&nbsp;
                 <button onClick={() => setRequest("dsc")}>Decsending</button>
@@ -106,10 +106,9 @@ const Dashbord = () => {
                                 </tbody>
                         </table>
                         <Pagination
-                            count={5}
-                            color='secendory'
+                            count={request.length}                            
                             shape='rounded'
-                            variant='outlined'
+                            variant='outlined'                    
                             onChange={(event, value) => { setPage(value) }}
                         />
             </div>

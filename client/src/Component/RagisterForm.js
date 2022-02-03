@@ -1,11 +1,13 @@
 import React from 'react';
-import { useFormik } from 'formik';
+import {useFormik } from 'formik';
+// import * as Yup from 'yup';
 import { NavLink, useHistory } from 'react-router-dom';
 import { useEffect } from 'react';
 import queryString from 'query-string';
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { register_user, edit_User, update_User, country, state, city,  } from '../Actions/userAction';
+import { uniqueId } from 'lodash';
 
 
 const RegForm = () => {
@@ -34,7 +36,62 @@ const RegForm = () => {
     const stateData = useSelector(state => state.stateData)
     const cityData = useSelector(state => state.cityData)
 
-    //////////////////////////////// Formik Values ////////////////////////////////
+    //////////////////////////////// Formik Values ///////////////////////////////
+    
+    // const validationSchema = Yup.object().shape({
+    //     name: Yup.string()
+    //         .max(20, 'Must be 20 characters or less')
+    //         .required('Enter Your Name'),
+        
+    //     phone: Yup.number()
+    //         .max(12, 'Must be 12 digits or less')
+    //         .required('Enter Your Phone'),
+        
+    //     profession: Yup.string()
+    //         .profession('Profession is not valid!')
+    //         .required('Enter Your Profession'),
+        
+    //     salary1: Yup.number()
+    //         .salary1('invalid')
+    //         .required('Enter Your salary1'),
+        
+    //     salary2: Yup.number()
+    //         .salary2('invalid')
+    //         .required('Enter Your salary2'),
+        
+    //     salary3: Yup.number()
+    //         .salary3('invalid')
+    //         .required('Enter Your salary3'),
+        
+    //     totalsalary: Yup.string()
+    //         .totalsalary('invalid')
+    //         .required('required'),
+        
+    //     email: Yup.string()
+    //         .email('E-mail is not valid!')
+    //         .required('E-mail is required!'),
+        
+    //     password: Yup.string()
+    //         .min(6, 'must be 6 at least character')
+    //         .required('Password is required!'),
+        
+    //     confirmpassword: Yup.string()
+    //         .oneOf([Yup.ref('password'), null], 'Password must match')
+    //         .required('Password is required!'),
+        
+    //     countryId: Yup.string()
+    //         .countryId('countryid is not valid')
+    //         .required('Countr is required'),
+        
+    //     stateId: Yup.string()
+    //         .stateId('stateid is not valid')
+    //         .required('State is required'),
+        
+    //     cityId: Yup.string()
+    //         .cityId('cityid is not valid')
+    //         .required('City is required'),
+    // })
+
     const formik = useFormik({
         initialValues: {
             name: "",
@@ -42,30 +99,35 @@ const RegForm = () => {
             profession: "",
             salary1: "",
             salary2: "",
-            salary3:"",
+            salary3: "",
             totalsalary: "",
             email: "",
             password: "",
             confirmpassword: "",
-            countryId: "",            
+            countryId: "",
             stateId: "",
             cityId: ""
-        },
+        },        
 
         onSubmit: (values) => {
             if (id) {
                 dispatch(update_User(id, values))
                 history.push('/dashbord')
-
                 // for add new User
             } else {
                 console.log(values);
-                dispatch(register_user(values))                
+                dispatch(register_user(values))
                 history.push('/loginpage')
                 formik.handleReset()
-            }            
-        }         
-    });
+            }
+        },        
+    });    
+    // <Formik
+    //     validationSchema={validationSchema}
+    //     render={RegForm}
+    // />
+    
+    
     
     //////////////////////////////// get selectedEdit object ////////////////////////////////
     useEffect(() => {
@@ -123,10 +185,11 @@ const RegForm = () => {
                         onChange={formik.handleChange}
                         value={formik.values.name} required
                     /><br />
+                    {/* <ErrorMessage name='name' /> */}
                     
                     <input type="number"
                         name="phone"
-                        placeholder='Enter phone'
+                        placeholder='Enter Phone'
                         onChange={formik.handleChange}
                         value={formik.values.phone} required
                     /><br />
@@ -140,44 +203,52 @@ const RegForm = () => {
 
                     <input type="text"
                         name='salary1'
-                        placeholder='Enter salary1'
+                        placeholder='Enter Salary1'
                         onChange={formik.handleChange}
                         value={formik.values.salary1} required
                     /><br />
 
                     <input type="text"
                         name='salary2'
-                        placeholder='Enter Profession'
+                        placeholder='Enter Salary2'
                         onChange={formik.handleChange}
                         value={formik.values.salary2} required
                     /><br />
 
                     <input type="text"
                         name='salary3'
-                        placeholder='Enter Profession'
+                        placeholder='Enter Salary3'
                         onChange={formik.handleChange}
                         value={formik.values.salary3} required
+                    /><br />
+
+                    <input type="text"
+                        name='totalsalary'
+                        placeholder='Total Salary'
+                        onChange={formik.handleChange}
+                        value={formik.values.totalsalary} required
+                        readOnly={true}
                     /><br />
                                        
                     <input type="text"
                         name='email'
                         placeholder='Enter Email'
-                        onChange={formik.handleChange}
+                        onChange={formik.handleChange} unique
                         value={formik.values.email} required
                     /><br />
                     
                     <input type="password"
                         name='password'
-                        placeholder='Enter password'
+                        placeholder='Enter Password'
                         onChange={formik.handleChange}
                         value={formik.values.password} required
                     /><br />
                     
                     <input type="password"
                         name='confirmpassword'
-                        placeholder='Enter confirm password'
+                        placeholder='Enter Confirm Password'
                         onChange={formik.handleChange}
-                        value={formik.values.confirmpassword} required
+                        value={formik.values.confirmpassword} required 
                     /><br />
 
                     <select className='dropdown' name="countryId" onChange={(e) => countryChange(e)}>
@@ -186,7 +257,7 @@ const RegForm = () => {
                             return (
                                 <option value={elem._id} key={elem._id}>{elem.countryName}</option>
                             )
-                        })} required
+                        })} 
                     </select><br />
 
                     <select className='dropdown' name="stateId"   onChange={(e) => stateChange(e)}>
@@ -195,7 +266,7 @@ const RegForm = () => {
                             return (
                                 <option value={elem._id} key={elem._id}>{ elem.stateName}</option>                        
                             )
-                        })} required                         
+                        })}                          
                     </select><br /> 
 
                     <select className='dropdown' name= "cityId"  onChange={(e) => cityChange(e)}>
@@ -204,7 +275,7 @@ const RegForm = () => {
                             return (
                                 <option value={elem._id} key={elem._id}>{elem.cityName}</option>        
                             )
-                        })} required                       
+                        })}                        
                     </select><br />                                       
 
                     {!id ? (

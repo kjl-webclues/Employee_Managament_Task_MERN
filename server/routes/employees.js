@@ -5,6 +5,7 @@ const Country = require('../model/country')
 const State = require('../model/state')
 const City = require('../model/city')
 const authenticate = require ("../middleware/checkAuth")
+const { findOne } = require('../model/employee')
 
 //////////////////////////////// For Get Country List ////////////////////////////////
 router.get('/getCountry', async (req, res) => {
@@ -47,7 +48,7 @@ router.get('/getCity/:stateId', async (req, res) => {
 })
 
 //////////////////////////////////// For Get User And Pagination/Searchin/Sorting ///////////////////////////////////
-router.get('/getUser/:pageNumber/:Request', authenticate,async (req, res) => {
+router.get('/getUser/:pageNumber/:Request', async (req, res) => {
     try {
         const page = req.params.pageNumber
         const limit = 5
@@ -88,7 +89,7 @@ router.get('/getUser/:pageNumber/:Request', authenticate,async (req, res) => {
         //////////////////////////////// For Pagination ////////////////////////////////
         if (page) {
             aggregateQuery.push(
-            { $skip: (page - 1) * limit }, { $limit: limit })
+            { $skip: (page - 1) * limit }, {$limit: limit})
         }
         
         //////////////////////////////// For Sorting Data ////////////////////////////////
@@ -104,10 +105,10 @@ router.get('/getUser/:pageNumber/:Request', authenticate,async (req, res) => {
                 {
                     $match: {
                         $or: [
-                            { "name": RegExp("^" +search, "i")},
-                            { "salary1": parseInt(search) },
-                            { "salary2": parseInt(search) },
-                            { "salary3": parseInt(search) },
+                            { "name": RegExp("^" + search, "i") },
+                            { "phone": parseInt(search) },
+                            { "profession": RegExp("^" + search, "i") },
+                            { "email": RegExp("^" + search, "i") },                            
                             { "country.countryName": RegExp("^" + search, "i") },
                             { "state.stateName": RegExp("^" + search, "i") },
                             { "city.cityName": RegExp("^" + search, "i") }                            
@@ -125,28 +126,19 @@ router.get('/getUser/:pageNumber/:Request', authenticate,async (req, res) => {
 
 //////////////////////////////// For Register User ////////////////////////////////
 router.post('/signUp', async (req, res) => {
-    const user = new User({
-        name: req.body.name,
-        profession: req.body.profession,
-        phone: req.body.phone,
-        salary1: req.body.salary1,
-        salary2: req.body.salary2,
-        salary3: req.body.salary3,
-        email: req.body.email,
-        password: req.body.password,
-        confirmpassword: req.body.confirmpassword,
-        countryId: req.body.countryId,
-        stateId: req.body.stateId,
-        cityId: req.body.cityId,
-        token: req.body.token
-    })
+     const user = req.body
     try {
-        const userData = await user.save()
-        res.send(userData)
-    } catch (err) {
-        res.send("Error" + err)
-        console.log(err);
+        const emailExist = await User.findOne({ email: user.email })
+        if (emailExist) {
+            res.send("Email already Exists")
+        } else {
+            const result = await User(user).save();
+            res.send("Register Sucessfully")
+        }
     }
+    catch (err) {
+        res.send("error" + err)
+    };
 })
 
 //////////////////////////////// For Login User ////////////////////////////////

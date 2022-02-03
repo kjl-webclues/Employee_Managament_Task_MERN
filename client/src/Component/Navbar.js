@@ -5,11 +5,11 @@ import { useSelector } from "react-redux"
 
 const Navbar = () => {  
     
-  const userState = useSelector(state => state.userState)
+  const loginStatus = useSelector(state => state.loginStatus)
 
     const RenderMenu = () => { 
 
-        if (userState) {
+        if (loginStatus) {
             return (
                 <>
                     <NavLink to='/'><button>Home</button></NavLink>

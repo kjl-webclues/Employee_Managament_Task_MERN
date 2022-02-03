@@ -1,16 +1,24 @@
 import axios from "axios";
+import { toast } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
+toast.configure()
 
 //////////////////////////////////// USER ACTIONS START ////////////////////////////////////
 ///////////////////////// For Register user /////////////////////////
 export const register_user = (values) => dispatch => {
     return (
        axios.post(`/signUp`, values)
-            .then(() => {
+            .then((res) => {
                 dispatch({ type: "REGISTER_USER", payload: values })
-                alert("Registration Successful");                    
+                const result = res.data
+                console.log(result);
+                if (result === "user Already Exist") {
+                toast.error(result, { position: toast.POSITION.TOP_LEFT, autoClose:2000 })                    
+                } else {
+                toast.success(result, { position: toast.POSITION.TOP_LEFT, autoClose:2000 });                                        
+                }
             })
             .catch(error => {
-                alert("Invalid Registration")
                 console.log('error', error);
             })        
     )
@@ -22,11 +30,11 @@ export const login_User = (values) => dispatch => {
     return (
         axios.post(`/signIn`, values)
             .then((res) => {                
-                alert("Login Successful");
-                dispatch({ type: "LOGIN_USER", payload: res.data })
+                toast.success("Login Successful", { position: toast.POSITION.TOP_LEFT, autoClose:2000 });
+                dispatch({ type: "LOGIN_USER" })
             })
             .catch(error => {
-                alert("Invalid Credentials")
+                toast.error("Invalid Credentials", { position: toast.POSITION.TOP_LEFT, autoClose:2000 })
                 console.log('error', error);
             })
     )
@@ -65,7 +73,8 @@ export const update_User = (id, values) => dispatch => {
     return (
         axios.put(`/updateUser/${id}`, values)
             .then(res => {
-                const updateUserData = res.data;
+                toast.success("Update Data Successfully", { position: toast.POSITION.TOP_LEFT, autoClose:2000 });
+                const updateUserData = res.data;                
                 dispatch({ type: "UPDATE_USER", payload: updateUserData })
             })
             .catch(error => {
@@ -78,7 +87,8 @@ export const update_User = (id, values) => dispatch => {
 export const delete_User = (id) => dispatch => {
     return (
         axios.delete(`/deleteUser/${id}`)
-        .then(res => {
+            .then(res => {
+                toast.success("Delete Record Successfully", { position: toast.POSITION.TOP_LEFT, autoClose:2000 });            
                 const userData = res.data;
                 dispatch({ type: "DELETE_USER", payload: userData })
             })

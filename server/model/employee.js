@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const jwt = require('jsonwebtoken')
+const validator = require('validator')
 
 //create a schema
 
@@ -13,7 +14,7 @@ const userSchema = new mongoose.Schema({
         required: true
     },
     phone: {
-        type: Number,
+        type: Number, 
         required: true
     },
     salary1: {
@@ -29,8 +30,15 @@ const userSchema = new mongoose.Schema({
         required: true
     },
     email: {
-        type: String,
-        required: true
+        type: String, 
+        required: true,
+        unique: true,
+    
+        validate(value) {
+            if (!validator.isEmail(value)) {
+                throw new Error("Email is invalid")
+            }
+        }
     },
     password: {
         type: String,
@@ -61,6 +69,19 @@ const userSchema = new mongoose.Schema({
         }
     ]
 })
+
+//validation
+// function isEmailExists(email, callback) {
+//     if (email) {
+//         mongoose.model['User'].findOne({
+//             email: { email: email }, function(err, result) {
+//                 if (err) {
+//                     return callback(err);                    
+//                 }
+//                 callback(!result)
+//          }})
+//     }
+// }
 
 //GENERATE TOKEN
 userSchema.methods.generateAuthToken = async function () {
