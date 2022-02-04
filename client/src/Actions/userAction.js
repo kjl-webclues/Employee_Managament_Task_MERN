@@ -12,15 +12,16 @@ export const register_user = (values) => dispatch => {
                 dispatch({ type: "REGISTER_USER", payload: values })
                 const result = res.data
                 console.log(result);
-                if (result === "user Already Exist") {
-                toast.error(result, { position: toast.POSITION.TOP_LEFT, autoClose:2000 })                    
+                if (result === "Email already Exists") {
+                toast.error(result, { position: toast.POSITION.TOP_LEFT, autoClose:2000 })
                 } else {
-                toast.success(result, { position: toast.POSITION.TOP_LEFT, autoClose:2000 });                                        
+                    console.log("error");
+                toast.success(result, { position: toast.POSITION.TOP_LEFT, autoClose:2000 });
                 }
             })
             .catch(error => {
                 console.log('error', error);
-            })        
+            })
     )
 
 }
@@ -41,11 +42,12 @@ export const login_User = (values) => dispatch => {
 }
 
 ///////////////////////// For Get Request /////////////////////////
-export const get_User = (page,Request) => dispatch => {
+export const get_User = (page,sort,Request) => dispatch => {
     return (
-        axios.get(`/getUser/${page}/${Request}`)
+        axios.get(`/getUser/?page=${page}&sort=${sort}&Request=${Request}`)
             .then(res => {
                 const getUserData = res.data;
+                //console.table(getUserData)
                 dispatch({ type: "GET_USER" , payload: getUserData })            
             })
             .catch(error => {
@@ -74,10 +76,11 @@ export const update_User = (id, values) => dispatch => {
         axios.put(`/updateUser/${id}`, values)
             .then(res => {
                 toast.success("Update Data Successfully", { position: toast.POSITION.TOP_LEFT, autoClose:2000 });
-                const updateUserData = res.data;                
+                const updateUserData = res.data;
                 dispatch({ type: "UPDATE_USER", payload: updateUserData })
             })
             .catch(error => {
+                toast.error("Can Not Update Data", { position: toast.POSITION.TOP_LEFT, autoClose:2000 });
                 console.log("error", error);
             })
     )
@@ -88,7 +91,8 @@ export const delete_User = (id) => dispatch => {
     return (
         axios.delete(`/deleteUser/${id}`)
             .then(res => {
-                toast.success("Delete Record Successfully", { position: toast.POSITION.TOP_LEFT, autoClose:2000 });            
+                toast.success("Delete Record Successfully", { position: toast.POSITION.TOP_LEFT, autoClose: 2000 });
+                window.location.reload()                
                 const userData = res.data;
                 dispatch({ type: "DELETE_USER", payload: userData })
             })
@@ -124,7 +128,7 @@ export const country = () => dispatch => {
             })
 }
 
-///////////////////////// For State DropdownList /////////////////////////
+// ///////////////////////// For State DropdownList /////////////////////////
 export const state = (countryId) => dispatch => {
     axios.get(`/getState/${countryId}`)
         .then(res => {
@@ -136,7 +140,7 @@ export const state = (countryId) => dispatch => {
             })
 }
 
-///////////////////////// For City DropdownList /////////////////////////
+// ///////////////////////// For City DropdownList /////////////////////////
 export const city = (stateId) => dispatch => {
     axios.get(`/getCity/${stateId}`)
         .then(res => {

@@ -12,27 +12,29 @@ const Dashbord = () => {
 
     //////////////////////////////////// useState Start /////////////////////////
 
-    const [request, setRequest] = useState('asc'); //For Searching
+    const [request, setRequest] = useState(''); //For Searching 
     const [page, setPage] = useState(1); //For Pagination
-
+    const [sort, setSort] = useState('ascending')//For Sorting
     //////////////////////////////////// useState End /////////////////////////
 
     ///////////////////////// For Maping Data /////////////////////////
     const userData = useSelector(state => state.userData);
+    const pageNumber = useSelector(state =>state.pageNumber)
     
     //////////////// Dispatch the Api Request ///////////////////
     const dispatch = useDispatch();
     
     //////////////// For Delete User Api ////////////////
-    const deleteUser = (id) => {        
-        dispatch(delete_User(id))
-        window.confirm("Are You Sure?")
+    const deleteUser = (id) => {
+        if (window.confirm("Are You Sure?")) {
+            dispatch(delete_User(id))
+        } 
     }
 
     //////////////// For Get Request ////////////////
     useEffect(() => {
-        dispatch(get_User(page, request))        
-    }, [page,request, dispatch])
+        dispatch(get_User(page,sort,request))        
+    }, [page,sort,request, dispatch])
     
     //////////////// For Searching ////////////////
     const handleSearch = debounce((value) => {
@@ -55,13 +57,13 @@ const Dashbord = () => {
 
             
             <div>                    
-                <button onClick={() => setRequest("asc")}>Ascending</button>&nbsp;
-                <button onClick={() => setRequest("dsc")}>Decsending</button>
+                <button onClick={() => setSort("ascending")}>Ascending</button>&nbsp;
+                <button onClick={() => setSort("descending")}>Decsending</button>
             </div> 
             
             <hr />
-
-            <div className='col-md-12  mx-auto'>
+            {
+                pageNumber ? (<><div className='col-md-12  mx-auto'>
                         <table className='table table-hover'>
                                 <thead className='text-black text-center'>
                                     <tr>                                        
@@ -99,19 +101,23 @@ const Dashbord = () => {
                                                 <td>{elem.state && elem.state.map((i => i.stateName))}</td>
                                                 <td>{elem.city && elem.city.map((i => i.cityName))}</td>
                                                 <td><NavLink to={`/editUser/:?id=${elem._id}`}><button className='editbtn'>Edit</button></NavLink> &nbsp;
-                                                <button className='deletebtn' onClick={() => deleteUser(elem._id)}>Delete</button></td>                                                        
+                                                <button className='deletebtn' onClick={() => deleteUser(elem.email)}>Delete</button></td>                                                        
                                             </tr> 
                                         )
                                     })}
                                 </tbody>
                         </table>
                         <Pagination
-                            count={request.length}                            
+                            count={pageNumber}                            
                             shape='rounded'
                             variant='outlined'                    
                             onChange={(event, value) => { setPage(value) }}
                         />
-            </div>
+                </div></>) : (<>
+                        <div><h1>NO DATA FOUND</h1></div>
+                </>)
+            }
+            
         </>
     )
 }

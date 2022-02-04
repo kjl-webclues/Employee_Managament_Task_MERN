@@ -19,8 +19,8 @@ const LoginForm = () => {
         },
         onSubmit: (values) => {
             // for employee login 
-            history.push('/dashbord')                       
             Apidispatch(login_User(values))
+            history.push('/dashbord')
         }
     })
  

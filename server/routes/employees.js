@@ -5,7 +5,6 @@ const Country = require('../model/country')
 const State = require('../model/state')
 const City = require('../model/city')
 const authenticate = require ("../middleware/checkAuth")
-const { findOne } = require('../model/employee')
 
 //////////////////////////////// For Get Country List ////////////////////////////////
 router.get('/getCountry', async (req, res) => {
@@ -17,7 +16,7 @@ router.get('/getCountry', async (req, res) => {
     }
 })
 
-///////////////////////////////// For Get StateList ////////////////////////////////
+// ///////////////////////////////// For Get StateList ////////////////////////////////
 router.get('/getState/:countryId', async (req, res) => {
     try {
         const id = req.params.countryId
@@ -32,7 +31,7 @@ router.get('/getState/:countryId', async (req, res) => {
     }
 })
 
-//////////////////////////////// For Get StateList ////////////////////////////////
+// //////////////////////////////// For Get StateList ////////////////////////////////
 router.get('/getCity/:stateId', async (req, res) => {
     try {
         const id = req.params.stateId
@@ -47,12 +46,13 @@ router.get('/getCity/:stateId', async (req, res) => {
     }
 })
 
-//////////////////////////////////// For Get User And Pagination/Searchin/Sorting ///////////////////////////////////
-router.get('/getUser/:pageNumber/:Request', async (req, res) => {
+//////////////////////////////////// For Get User And Pagination/Requestin/sorting ///////////////////////////////////
+router.get('/getUser', authenticate, async (req, res) => {
     try {
-        const page = req.params.pageNumber
+        const {page,sort,Request} = req.query
         const limit = 5
-        const Request = req.params.Request
+        let skip = (page - 1) * limit;
+        
         const aggregateQuery = []
         
         
@@ -86,39 +86,80 @@ router.get('/getUser/:pageNumber/:Request', async (req, res) => {
                 }
                 })
         
-        //////////////////////////////// For Pagination ////////////////////////////////
-        if (page) {
-            aggregateQuery.push(
-            { $skip: (page - 1) * limit }, {$limit: limit})
-        }
-        
-        //////////////////////////////// For Sorting Data ////////////////////////////////
-        if (Request === "asc" || Request === "dsc") {
-            aggregateQuery.push(
-                { $sort: { "name": Request === "asc" ? 1 : -1 } }                
-            )
-        }
-        else {
-            //////////////////////////////// For Searching Data ////////////////////////////////
-            const search = Request
+        //////////////////////////////// For Searching ////////////////////////////////
+        if(Request !== ""){
+
             aggregateQuery.push(
                 {
                     $match: {
                         $or: [
-                            { "name": RegExp("^" + search, "i") },
-                            { "phone": parseInt(search) },
-                            { "profession": RegExp("^" + search, "i") },
-                            { "email": RegExp("^" + search, "i") },                            
-                            { "country.countryName": RegExp("^" + search, "i") },
-                            { "state.stateName": RegExp("^" + search, "i") },
-                            { "city.cityName": RegExp("^" + search, "i") }                            
-                        ]
+                            { "name": RegExp("^" + Request, "i") },
+                            { "phone": parseInt(Request) },
+                            { "profession": RegExp("^" + Request, "i") },
+                            { "email": RegExp("^" + Request, "i") },                            
+                            { "country.countryName": RegExp("^" + Request, "i") },
+                            { "state.stateName": RegExp("^" + Request, "i") },
+                            { "city.cityName": RegExp("^" + Request, "i") }   
+                        ]   
                     }
-                }
+                },    
             )
+            
+            
+            const matchUser = await User.aggregate([aggregateQuery]);
+
+            
+            let totalPage = Math.ceil(matchUser.length/limit);
+            
+            aggregateQuery.push(
+                //////////////////////////////// sorting ////////////////////////////////
+                {$sort: { name : sort === "descending" ? -1 : 1}},
+
+                //////////////////////////////// Pagination ////////////////////////////////
+                {
+                    $skip: skip
+                },
+                {
+                    $limit: limit  
+                }  
+                     
+            )
+            ////////////////////////////////// Apply AggreagteQuery In User Collection ////////////////////////////////
+            const users = await User.aggregate([aggregateQuery]);
+            
+            ////////////////////////////////// Send Response ////////////////////////////////
+            res.send({users, totalPage});   
+        } 
+        else if(Request === ""){
+
+            ////////////////////////////////// Count Total Documents ////////////////////////////////
+            const total = await User.countDocuments({});
+
+            ////////////////////////////////// Count Total Pages ////////////////////////////////
+            let totalPage = Math.ceil(total/limit);
+
+            aggregateQuery.push(
+                
+                ////////////////////////////////// sorting ////////////////////////////////
+                {$sort: { name : sort === "descending" ? -1 : 1}},
+
+                ////////////////////////////////// Pagination ////////////////////////////////
+                {
+                    $skip: skip
+                },
+                {
+                    $limit: limit  
+                }  
+            )
+            console.log(aggregateQuery);
+            ////////////////////////////////// Apply AggreagteQuery In User Collection ////////////////////////////////
+            const users = await User.aggregate([aggregateQuery]);
+            
+            ////////////////////////////////// Send Response ////////////////////////////////
+            res.send({users, totalPage});   
         }
-        const userData = await User.aggregate(aggregateQuery)
-        res.send(userData)
+                
+    
     } catch (err) {
         res.send('Error' + err)
     }
@@ -194,11 +235,12 @@ router.put('/updateUser/:id', authenticate, async (req, res) => {
 })
 
 //////////////////////////////// For Delete User ////////////////////////////////
-router.delete('/deleteUser/:id', authenticate, async (req, res) => {
+router.delete('/deleteUser/:email', authenticate, async (req, res) => {    
     try {
-    res.clearCookie("jwtLogin")
-    const userData = await User.findByIdAndDelete(req.params.id)
-    res.json(userData)
+        if (req.authenticateUser.email === req.params.email) {
+            req.clearCookie("jwtLogin")
+        }
+        await User.findOneAndDelete({email:req.params.email})
     } catch (err) {
         res.send('Error' + err)
     }

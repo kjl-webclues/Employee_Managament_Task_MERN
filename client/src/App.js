@@ -14,7 +14,7 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 const App = () => {
 
   const loginStatus = useSelector(state => state.loginStatus)
-  //console.log(loginStatus);
+  console.log(loginStatus);
   
   return (
      <>      

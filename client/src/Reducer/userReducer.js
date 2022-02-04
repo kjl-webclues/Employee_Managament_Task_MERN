@@ -1,10 +1,11 @@
 const initialState = {
     userData: [],
     loginStatus: false,
-    userList: [],
+    // userList: [],
     countryData: [],
     stateData: [],
     cityData: [],
+    pageNumber:[]
 }
 
 const userReducer = (state = initialState, action) => {
@@ -23,19 +24,19 @@ const userReducer = (state = initialState, action) => {
         case "GET_USER":
             return {
                 ...state,
-                userData: action.payload
+                userData: action.payload.users,
+                pageNumber:action.payload.totalPage,
             }
         
         case "EDIT_USER":
             return {
                 ...state,
-                userList: action.payload
+                // userList: action.payload
             }
         
         case "UPDATE_USER":
             return {
-                ...state,                
-                userList: action.payload
+                ...state
             }
         
         case "DELETE_USER":

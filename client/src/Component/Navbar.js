@@ -12,8 +12,8 @@ const Navbar = () => {
         if (loginStatus) {
             return (
                 <>
-                    <NavLink to='/'><button>Home</button></NavLink>
-                    <NavLink to='/registerpage'><button>Sign Up</button></NavLink>                
+                    {/* <NavLink to='/'><button>Home</button></NavLink> */}
+                    {/* <NavLink to='/registerpage'><button>Sign Up</button></NavLink>*/}
                     <NavLink to='/dashbord'><button>Dashbord</button></NavLink>
                     <NavLink to='/Logout'><button>Logout</button></NavLink>
                 </>
@@ -24,7 +24,7 @@ const Navbar = () => {
                     <NavLink to='/'><button>Home</button></NavLink>                    
                     <NavLink to='/registerpage'><button>Sign Up</button></NavLink>
                     <NavLink to='/loginpage'><button>Sign In</button></NavLink>
-                    <NavLink to='/dashbord'><button>Dashbord</button></NavLink>                    
+                    {/* <NavLink to='/dashbord'><button>Dashbord</button></NavLink>*/}
                 </>
             )
         }

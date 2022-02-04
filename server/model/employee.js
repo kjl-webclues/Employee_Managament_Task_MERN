@@ -33,7 +33,7 @@ const userSchema = new mongoose.Schema({
         type: String, 
         required: true,
         unique: true,
-    
+        //Validate EmailId
         validate(value) {
             if (!validator.isEmail(value)) {
                 throw new Error("Email is invalid")
@@ -69,19 +69,6 @@ const userSchema = new mongoose.Schema({
         }
     ]
 })
-
-//validation
-// function isEmailExists(email, callback) {
-//     if (email) {
-//         mongoose.model['User'].findOne({
-//             email: { email: email }, function(err, result) {
-//                 if (err) {
-//                     return callback(err);                    
-//                 }
-//                 callback(!result)
-//          }})
-//     }
-// }
 
 //GENERATE TOKEN
 userSchema.methods.generateAuthToken = async function () {
