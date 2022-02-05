@@ -19,40 +19,47 @@ const Dashbord = () => {
 
     ///////////////////////// For Maping Data /////////////////////////
     const userData = useSelector(state => state.userData);
-    const pageNumber = useSelector(state =>state.pageNumber)
+    const pageNumber = useSelector(state => state.pageNumber);
+
+    const LoginUser = useSelector(state => state.LoginUser);
+
+    const DeleteUser = useSelector(state => state.DeleteUser);
+
+    console.log("DeleteUser",DeleteUser);
     
     //////////////// Dispatch the Api Request ///////////////////
     const dispatch = useDispatch();
     
     //////////////// For Delete User Api ////////////////
     const deleteUser = (id) => {
-        if (window.confirm("Are You Sure?")) {
+        window.confirm("Are You Sure?")
             dispatch(delete_User(id))
-        } 
+
     }
 
-    //////////////// For Get Request ////////////////
-    useEffect(() => {
-        dispatch(get_User(page,sort,request))        
-    }, [page,sort,request, dispatch])
-    
     //////////////// For Searching ////////////////
     const handleSearch = debounce((value) => {
         setRequest(value)
-    }, 500)   
+    }, 500)
+    
+    //////////////// For Get Request ////////////////
+    useEffect(() => {
+        dispatch(get_User(page,sort,request))        
+    }, [page, sort, request, dispatch, DeleteUser])
+    
 
     return (        
         <> 
             <div className='container'>
                     <div className='row'>
                         <div className='col-md-12 my-1 text-center'>
-                            <h1> Welcome to Dashbord</h1>            
+                            <h1>{ LoginUser && (`Welcome ${LoginUser.name}`)}</h1>            
                         </div>
                     </div>                    
             </div>
 
             <div className='searchbar'>
-                <input type="text" onChange={(e) => handleSearch(e.target.value)} />        
+                <input type="search" placeholder='Search Here...' onChange={(e) => handleSearch(e.target.value)} />        
             </div>
 
             

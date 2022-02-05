@@ -6,43 +6,54 @@ const State = require('../model/state')
 const City = require('../model/city')
 const authenticate = require ("../middleware/checkAuth")
 
-//////////////////////////////// For Get Country List ////////////////////////////////
-router.get('/getCountry', async (req, res) => {
+//////////////////////////////// For Register User ////////////////////////////////
+router.post('/signUp', async (req, res) => {
+     const user = req.body
     try {
-        const country = await Country.find()
-        res.send(country)
-    } catch (err) {
-        res.send('Error' + err)
+        const emailExist = await User.findOne({ email: user.email })
+        if (emailExist) {
+            res.send("Email already Exists")
+        } else {
+            const result = await User(user).save();
+            res.send("Register Sucessfully")
+        }
     }
+    catch (err) {
+        res.send("error" + err)
+    };
 })
 
-// ///////////////////////////////// For Get StateList ////////////////////////////////
-router.get('/getState/:countryId', async (req, res) => {
+//////////////////////////////// For Login User ////////////////////////////////
+router.post('/signIn', async (req, res) => {
     try {
-        const id = req.params.countryId
-        aggregateQuery =[{
-            $match: {"countryId" :id}
-        }]
+        let token;        
+        const { email, password } = req.body;
 
-        const userData = await State.aggregate(aggregateQuery)
-        res.send(userData)
+        //Details are filled properly
+        if (!email || !password) {
+            return res.status(400).send({ error: "please field the data" });            
+        }
+
+        //user Exist
+        const userLogin = await User.findOne({ email: email, password: password });
+
+        if (userLogin) {
+
+            //Generate Token
+            token = await userLogin.generateAuthToken();
+
+            //Store the Token in Cookie
+            res.cookie("jwtLogin", token, {
+                expiresIn: new Date(Date.now() + 1 * 3600 * 1000),
+                httpOnly: true
+            })
+            res.send({msg: " user Login Successfully"});
+        } else {
+            res.status(400).send({ error: "Invalid Credientials!"});
+        }
+
     } catch (err) {
-        res.send('Error' + err)
-    }
-})
-
-// //////////////////////////////// For Get StateList ////////////////////////////////
-router.get('/getCity/:stateId', async (req, res) => {
-    try {
-        const id = req.params.stateId
-        aggregateQuery =[{
-            $match: {"stateId" : id }
-        }]
-
-        const userData = await City.aggregate(aggregateQuery)
-        res.send(userData)
-    } catch (err) {
-        res.send('Error' + err)
+        console.log(err);
     }
 })
 
@@ -52,7 +63,8 @@ router.get('/getUser', authenticate, async (req, res) => {
         const {page,sort,Request} = req.query
         const limit = 5
         let skip = (page - 1) * limit;
-        
+        const LoginUser = req.authenticateUser
+        console.log(LoginUser)
         const aggregateQuery = []
         
         
@@ -104,8 +116,7 @@ router.get('/getUser', authenticate, async (req, res) => {
                     }
                 },    
             )
-            
-            
+                        
             const matchUser = await User.aggregate([aggregateQuery]);
 
             
@@ -128,7 +139,7 @@ router.get('/getUser', authenticate, async (req, res) => {
             const users = await User.aggregate([aggregateQuery]);
             
             ////////////////////////////////// Send Response ////////////////////////////////
-            res.send({users, totalPage});   
+            res.send({users, totalPage, LoginUser});   
         } 
         else if(Request === ""){
 
@@ -151,63 +162,17 @@ router.get('/getUser', authenticate, async (req, res) => {
                     $limit: limit  
                 }  
             )
-            console.log(aggregateQuery);
+            // console.log(aggregateQuery);
             ////////////////////////////////// Apply AggreagteQuery In User Collection ////////////////////////////////
             const users = await User.aggregate([aggregateQuery]);
             
             ////////////////////////////////// Send Response ////////////////////////////////
-            res.send({users, totalPage});   
+            res.send({users, totalPage, LoginUser});   
         }
                 
     
     } catch (err) {
         res.send('Error' + err)
-    }
-})
-
-//////////////////////////////// For Register User ////////////////////////////////
-router.post('/signUp', async (req, res) => {
-     const user = req.body
-    try {
-        const emailExist = await User.findOne({ email: user.email })
-        if (emailExist) {
-            res.send("Email already Exists")
-        } else {
-            const result = await User(user).save();
-            res.send("Register Sucessfully")
-        }
-    }
-    catch (err) {
-        res.send("error" + err)
-    };
-})
-
-//////////////////////////////// For Login User ////////////////////////////////
-router.post('/signIn', async (req, res) => {
-    try {
-        let token;        
-        const { email, password } = req.body;
-
-        if (!email || !password) {
-            return res.status(400).send({ error: "please field the data" });            
-        }
-        const userLogin = await User.findOne({ email: email, password: password });
-
-        if (userLogin) {
-            //Generate Token
-            token = await userLogin.generateAuthToken();
-            //Store the Token in Cookie
-            res.cookie("jwtLogin", token, {
-                expiresIn: new Date(Date.now() + 1 * 3600 * 1000),
-                httpOnly: true
-            })
-            res.send(userLogin);
-        } else {
-            res.status(400).send({ error: "Invalid Credientials!"});
-        }
-
-    } catch (err) {
-        console.log(err);
     }
 })
 
@@ -222,25 +187,52 @@ router.get('/editUser/:id', authenticate, async (req, res) => {
 })
 
 //////////////////////////////// For Update Edited User ////////////////////////////////
-router.put('/updateUser/:id', authenticate, async (req, res) => {
+router.put('/updateUser/:id/:email', authenticate,  async (req, res) => {
     try {
-        const id = req.params.id;
-        const update= req.body;
-        const employee = await User.findByIdAndUpdate(id, update, {new: true})
 
-        res.send(employee)
+        console.log(req.params);
+        console.log(req.body);
+        const id = req.params.id;
+        const updateValue = req.body;
+        const email = req.params.email
+        
+
+        if (updateValue.email !== email) {
+            const emailExist = await User.findOne({ email: updateValue.email });
+
+            if (emailExist) {
+                return res.status(400).send({error:"Email already in use"})
+            } else {
+                await User.findByIdAndUpdate(id, updateValue, { new: true });
+                res.json('Employee Updated Successfully!')
+            }
+        } else {
+            await User.findByIdAndUpdate(id, updateValue, { new: true });
+                res.json('Employee Updated Successfully!')
+        } 
     } catch (err) {
         res.send('Error' + err)
     }
 })
 
 //////////////////////////////// For Delete User ////////////////////////////////
-router.delete('/deleteUser/:email', authenticate, async (req, res) => {    
+router.delete('/deleteUser/:email', authenticate, async (req, res) => { 
+    console.log(req.params.email);
     try {
         if (req.authenticateUser.email === req.params.email) {
-            req.clearCookie("jwtLogin")
-        }
-        await User.findOneAndDelete({email:req.params.email})
+            res.clearCookie('jwtLogin');
+
+            const loginStatus = false
+
+            await User.findOneAndDelete({ email: req.params.email })
+            res.send(loginStatus)
+        } else {
+            const loginStatus = true
+
+            await User.findOneAndDelete({email: req.params.email});
+            res.send(loginStatus)
+        }        
+        
     } catch (err) {
         res.send('Error' + err)
     }
@@ -264,6 +256,46 @@ router.get('/logout', authenticate, async (req, res) => {
     catch (err) {
         console.log('error');
         res.status(500).send(err);
+    }
+})
+
+//////////////////////////////// For Get Country List ////////////////////////////////
+router.get('/getCountry', async (req, res) => {
+    try {
+        const country = await Country.find()
+        res.send(country)
+    } catch (err) {
+        res.send('Error' + err)
+    }
+})
+
+// ///////////////////////////////// For Get StateList ////////////////////////////////
+router.get('/getState/:countryId', async (req, res) => {
+    try {
+        const id = req.params.countryId
+        aggregateQuery =[{
+            $match: {"countryId" :id}
+        }]
+
+        const userData = await State.aggregate(aggregateQuery)
+        res.send(userData)
+    } catch (err) {
+        res.send('Error' + err)
+    }
+})
+
+// //////////////////////////////// For Get StateList ////////////////////////////////
+router.get('/getCity/:stateId', async (req, res) => {
+    try {
+        const id = req.params.stateId
+        aggregateQuery =[{
+            $match: {"stateId" : id }
+        }]
+
+        const userData = await City.aggregate(aggregateQuery)
+        res.send(userData)
+    } catch (err) {
+        res.send('Error' + err)
     }
 })
 

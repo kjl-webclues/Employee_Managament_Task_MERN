@@ -1,26 +1,32 @@
 import React from "react";
 import { useFormik } from "formik";
 import { useDispatch } from 'react-redux';
-import {login_User} from '../Actions/userAction'
-import { useHistory } from "react-router-dom";
-
+import { login_User } from '../Actions/userAction'
+import * as Yup from 'yup'
 
 
 const LoginForm = () => {
     
     const Apidispatch = useDispatch();
 
-    const history = useHistory()
-
-    const formik = useFormik({
-        initialValues: {
+    const validationSchema = Yup.object().shape({
+        email: Yup.string()
+            .email('E-mail is not valid!')
+            .required('E-mail is required!'),
+        
+        password: Yup.string()
+            .required('Password is required!'),
+    })
+    const initialValues = {
             email: '',
             password: ''
-        },
-        onSubmit: (values) => {
-            // for employee login 
-            Apidispatch(login_User(values))
-            history.push('/dashbord')
+        }
+
+    const formik = useFormik({
+        initialValues,
+        validationSchema,
+        onSubmit: (values) => {            
+                Apidispatch(login_User(values))             
         }
     })
  
@@ -33,15 +39,32 @@ const LoginForm = () => {
                             name="email"
                             placeholder='Enter Email Address'
                             onChange={formik.handleChange}
-                            value={formik.values.email}
-                        /><br />
+                            //value={formik.values.email}
+                        {...formik.getFieldProps("email")}
+                    /><br />
+                    {formik.touched.email && formik.errors.email ? (
+                        <div className="fv-plugins-message-container">
+                            <div className="fv-help-block error">
+                                {formik.errors.email}
+                            </div>
+                        </div>
+                    ) : null}
                         
                         <input type="password"
                             name="password"
                             placeholder='Enter Password'
                             onChange={formik.handleChange}
-                            value={formik.values.password}
-                        /><br />
+                            //value={formik.values.password}
+                        {...formik.getFieldProps("password")}
+                    /><br />
+                    {formik.touched.password && formik.errors.password ? (
+                        <div className="fv-plugins-message-container">
+                            <div className="fv-help-block error">
+                                {formik.errors.password}
+                            </div>
+                        </div>
+                    ) : null}
+
                         <button className='login' type='submit' >Login</button>                    
                     </form>
             </div>

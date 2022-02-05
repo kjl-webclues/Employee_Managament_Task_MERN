@@ -14,7 +14,7 @@ const Navbar = () => {
                 <>
                     {/* <NavLink to='/'><button>Home</button></NavLink> */}
                     {/* <NavLink to='/registerpage'><button>Sign Up</button></NavLink>*/}
-                    <NavLink to='/dashbord'><button>Dashbord</button></NavLink>
+                    {/* <NavLink to='/dashbord'><button>Dashbord</button></NavLink> */}
                     <NavLink to='/Logout'><button>Logout</button></NavLink>
                 </>
             )

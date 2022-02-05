@@ -6,14 +6,14 @@ import { useEffect } from 'react';
 import queryString from 'query-string';
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { register_user, edit_User, update_User, country, state, city,  } from '../Actions/userAction';
+import { register_user, edit_User, update_User, country, state, city, register_Toggle,  } from '../Actions/userAction';
 import { toast } from 'react-toastify';
 
 
 const RegForm = () => {
     //Get Edited User Id
     const { id } = queryString.parse(window.location.search);
-    console.log(id);
+    //console.log(id);
 
     ///////////////////For Navigate Page ////////////
     const history = useHistory();
@@ -28,6 +28,8 @@ const RegForm = () => {
     const [cityId, setCityId] = useState('')    // Set City Id
     const [employee, setEmployee] = useState([]) //For store the Edited User Data
 
+    //console.log(employee.email)
+
     //////////////////////////////////// useState End /////////////////////////
 
     //////////////////////////////// Get responce of the Api Requeste ////////////////////////////////
@@ -37,40 +39,9 @@ const RegForm = () => {
     const countryData = useSelector(state => state.countryData)
     const stateData = useSelector(state => state.stateData)
     const cityData = useSelector(state => state.cityData)
+    const emailExist = useSelector(state => state.emailExist)
+    const registerToggle = useSelector(state => state.registerToggle)
 
-    //////////////////////////////// get selectedEdit object ////////////////////////////////
-    
-    useEffect(() => {
-        if (id) {
-            // dispatch(edit_User(id))
-            setEmployee(edit_User)
-        }
-    }, [])
-    const edit_User = userData.find((elem) => elem._id === id ? elem : null);
-    console.log("edit_User",edit_User);
-    const countryEdit = edit_User && edit_User.country.map(item => item.countryName)
-    const stateEdit = edit_User && edit_User.state.map(item => item.stateName)
-    const cityEdit = edit_User && edit_User.city.map(item => item.cityName)
-
-    //////////////////////////////// set update values ////////////////////////////////
-    useEffect(() => {
-        if (id && employee) {
-            formik.setValues(employee)
-        }
-    }, [employee])
-
-    //////////////////////////////// Dispatch Api Dropdown ////////////////////////////////
-    useEffect(() => {
-        dispatch(country())
-    }, [dispatch])
-    
-    useEffect(() => {
-        dispatch(state(countryId))
-    }, [countryId, dispatch])
-
-    useEffect(() => {
-        dispatch(city(stateId))
-    }, [stateId, dispatch])
 
     //////////////////////////////// Define HandleChange Function of Dropdown ////////////////////////////////
     const countryChange = (e) => {
@@ -153,22 +124,67 @@ const RegForm = () => {
         validationSchema, 
         onSubmit: (values) => {
             if (id) {
-                console.log(values);
-                dispatch(update_User(id, values))
-                history.push('/dashbord')
+                    dispatch(update_User(id, values, employee.email))
                 // for add new User
             } else {
-                if (formik.values.password !== formik.values.confirmpassword) {
+                if (values.password !== values.confirmpassword) {
                     toast.warning("Password Dose Not match")
                 } else {
-                    console.log(values);
-                    dispatch(register_user(values))
-                    history.push('/loginpage')
-                    formik.handleReset()
+                        dispatch(register_user(values))
+                        //history.push('/loginpage')
+                        formik.handleReset()                    
                 }                
             }
         },                        
     });
+    
+    useEffect(() => {
+        if (emailExist === true) {
+            history.push('/dashbord')
+        }
+    }, [emailExist])
+
+    //////////////////////////////// Register Toggle //////////////////////////////// 
+    useEffect(() => {
+        if (registerToggle === true) {
+            history.push('/loginpage')
+            dispatch(register_Toggle());
+        }
+    }, [registerToggle])
+
+    //////////////////////////////// get selectedEdit object ////////////////////////////////
+    
+    useEffect(() => {
+        if (id) {
+            // dispatch(edit_User(id))
+            setEmployee(edit_User)
+            
+        }
+    }, [])
+    const edit_User = userData.find((elem) => elem._id === id ? elem : null);
+    const countryEdit = edit_User && edit_User.country.map(item => item.countryName)
+    const stateEdit = edit_User && edit_User.state.map(item => item.stateName)
+    const cityEdit = edit_User && edit_User.city.map(item => item.cityName)
+
+    //////////////////////////////// set update values ////////////////////////////////
+    useEffect(() => {
+        if (id && employee) {
+            formik.setValues(employee)
+        }
+    }, [employee])
+
+    //////////////////////////////// Dispatch Api Dropdown ////////////////////////////////
+    useEffect(() => {
+        dispatch(country())
+    }, [dispatch])
+    
+    useEffect(() => {
+        dispatch(state(countryId))
+    }, [countryId, dispatch])
+
+    useEffect(() => {
+        dispatch(city(stateId))
+    }, [stateId, dispatch])
     return (
         <>
             <div>
@@ -266,7 +282,7 @@ const RegForm = () => {
                     ) : null}
 
                     <input type="number" placeholder="Total Salary"
-                        value={parseInt(formik.values.salary1) + parseInt(formik.values.salary2) + parseInt(formik.values.salary3)} disabled>                        
+                        value={parseInt(formik.values.salary1) + parseInt(formik.values.salary2) + parseInt(formik.values.salary3)} readOnly>                        
                     </input><br />
                                        
                     <input type="text"
@@ -370,8 +386,11 @@ const RegForm = () => {
                     <button onClick={formik.handleReset} className='cancel'>Cancel</button>
                 </form><br />
                 
-                <div className=''>
-                    <p>already registered <NavLink to='/loginpage'>Login</NavLink></p>                    
+                <div>   
+                    {
+                        id ? null : <p>already registered <NavLink to='/loginpage'>Login</NavLink></p>
+                    } 
+                     
                 </div>
             </div>
         </>

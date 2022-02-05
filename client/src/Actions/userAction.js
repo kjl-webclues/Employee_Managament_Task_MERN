@@ -1,6 +1,7 @@
 import axios from "axios";
 import { toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
+import { DELETE_USER } from "./actionType";
 toast.configure()
 
 //////////////////////////////////// USER ACTIONS START ////////////////////////////////////
@@ -15,7 +16,6 @@ export const register_user = (values) => dispatch => {
                 if (result === "Email already Exists") {
                 toast.error(result, { position: toast.POSITION.TOP_LEFT, autoClose:2000 })
                 } else {
-                    console.log("error");
                 toast.success(result, { position: toast.POSITION.TOP_LEFT, autoClose:2000 });
                 }
             })
@@ -24,6 +24,12 @@ export const register_user = (values) => dispatch => {
             })
     )
 
+}
+
+export const register_Toggle = () => dispatch => {
+    return (
+        dispatch({type:"REGISTER_TOGGLE"})
+    )
 }
 
 ///////////////////////// For Login User /////////////////////////
@@ -71,16 +77,16 @@ export const edit_User = (id) => dispatch => {
 }
 
 ///////////////////////// For Update User /////////////////////////
-export const update_User = (id, values) => dispatch => {
+export const update_User = (id, values, email) => dispatch => {
     return (
-        axios.put(`/updateUser/${id}`, values)
+        axios.put(`/updateUser/${id}/${email}`, values)
             .then(res => {
-                toast.success("Update Data Successfully", { position: toast.POSITION.TOP_LEFT, autoClose:2000 });
-                const updateUserData = res.data;
-                dispatch({ type: "UPDATE_USER", payload: updateUserData })
+                toast.success("Employee Updated Successfully!", { position: toast.POSITION.TOP_LEFT, autoClose:2000 });
+                
+                dispatch({ type: "UPDATE_USER" })
             })
             .catch(error => {
-                toast.error("Can Not Update Data", { position: toast.POSITION.TOP_LEFT, autoClose:2000 });
+                toast.error("Email already in use", { position: toast.POSITION.TOP_LEFT, autoClose:2000 });
                 console.log("error", error);
             })
     )
@@ -91,10 +97,9 @@ export const delete_User = (id) => dispatch => {
     return (
         axios.delete(`/deleteUser/${id}`)
             .then(res => {
-                toast.success("Delete Record Successfully", { position: toast.POSITION.TOP_LEFT, autoClose: 2000 });
-                window.location.reload()                
+                toast.success("Delete Record Successfully", { position: toast.POSITION.TOP_LEFT, autoClose: 2000 });                             
                 const userData = res.data;
-                dispatch({ type: "DELETE_USER", payload: userData })
+                dispatch({ type: DELETE_USER, payload: userData })
             })
             .catch(error => {
                 console.log("error", error);

@@ -1,18 +1,28 @@
 const initialState = {
     userData: [],
     loginStatus: false,
-    // userList: [],
     countryData: [],
     stateData: [],
     cityData: [],
-    pageNumber:[]
+    pageNumber: [],
+    LoginUser: '',
+    DeleteUser: false,
+    emailExist: false,
+    registerToggle: false
 }
 
 const userReducer = (state = initialState, action) => {
     switch (action.type) {
         case "REGISTER_USER":
             return {
-                ...state
+                ...state,
+                registerToggle: true
+            }
+        
+        case "REGISTER_TOGGLE":
+            return {
+                ...state,
+                registerToggle: false
             }
         
         case "LOGIN_USER":
@@ -25,23 +35,28 @@ const userReducer = (state = initialState, action) => {
             return {
                 ...state,
                 userData: action.payload.users,
-                pageNumber:action.payload.totalPage,
+                pageNumber: action.payload.totalPage,
+                LoginUser: action.payload.LoginUser,
+                emailExist: false
             }
         
         case "EDIT_USER":
             return {
-                ...state,
-                // userList: action.payload
+                ...state
             }
         
         case "UPDATE_USER":
             return {
-                ...state
+                ...state,
+                emailExist: true
             }
         
         case "DELETE_USER":
+            console.log("delete", action.payload);
             return {
-                ...state
+                ...state,
+                loginStatus: action.payload,
+                DeleteUser: true,
             }
         
         case "LOGOUT_USER":
