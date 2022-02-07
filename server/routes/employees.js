@@ -64,12 +64,12 @@ router.get('/getUser', authenticate, async (req, res) => {
         const limit = 5
         let skip = (page - 1) * limit;
         const LoginUser = req.authenticateUser
-        console.log(LoginUser)
+        //console.log(LoginUser)
         const aggregateQuery = []
         
         
 /////////////////////////////////////// Get Data of Collections ///////////////////////////////
-        
+    //Get Country Collection  
         aggregateQuery.push(
             {
                 $lookup: {
@@ -79,6 +79,8 @@ router.get('/getUser', authenticate, async (req, res) => {
                     as: "country"
                 }
             })
+        
+    //Get State Collection
             aggregateQuery.push(
                 {
                 $lookup: {
@@ -87,7 +89,9 @@ router.get('/getUser', authenticate, async (req, res) => {
                     foreignField: "_id",
                     as: "state"
                 }
-            })            
+                })
+    
+    //Get City Collection
             aggregateQuery.push(
                 {
                 $lookup: {
@@ -118,7 +122,6 @@ router.get('/getUser', authenticate, async (req, res) => {
             )
                         
             const matchUser = await User.aggregate([aggregateQuery]);
-
             
             let totalPage = Math.ceil(matchUser.length/limit);
             
@@ -190,8 +193,8 @@ router.get('/editUser/:id', authenticate, async (req, res) => {
 router.put('/updateUser/:id/:email', authenticate,  async (req, res) => {
     try {
 
-        console.log(req.params);
-        console.log(req.body);
+        //console.log(req.params);
+        //console.log(req.body);
         const id = req.params.id;
         const updateValue = req.body;
         const email = req.params.email
@@ -217,7 +220,7 @@ router.put('/updateUser/:id/:email', authenticate,  async (req, res) => {
 
 //////////////////////////////// For Delete User ////////////////////////////////
 router.delete('/deleteUser/:email', authenticate, async (req, res) => { 
-    console.log(req.params.email);
+    //console.log(req.params.email);
     try {
         if (req.authenticateUser.email === req.params.email) {
             res.clearCookie('jwtLogin');

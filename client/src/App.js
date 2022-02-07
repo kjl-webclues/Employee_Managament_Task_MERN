@@ -26,12 +26,12 @@ const App = () => {
             <Route exact path='/editUser/:id' component={RegForm}></Route>
         
             <ProtectedRoute exact path='/dashbord' component={Dashbord} isAuth={loginStatus} ></ProtectedRoute>
-        <ProtectedRoute exact path='/Logout' component={Logout} isAuth={loginStatus}></ProtectedRoute>
-        {!loginStatus ?
-          <Route exact path='/loginpage' component={LoginForm} isAuth={loginStatus} />
-          : <Redirect to = '/dashbord'/> }
-            <Route component={Error404} />          
-        </Switch>      
+            <ProtectedRoute exact path='/Logout' component={Logout} isAuth={loginStatus}></ProtectedRoute>
+            {!loginStatus ?
+                <Route exact path='/loginpage' component={LoginForm} isAuth={loginStatus} />
+                  : <Redirect to = '/dashbord'/> }
+                <Route component={Error404} />          
+          </Switch>      
     </>
   );
 };

@@ -1,14 +1,11 @@
 import React, {useEffect, useState } from 'react';
-import { NavLink, useHistory } from 'react-router-dom';
+import { NavLink} from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { get_User, delete_User} from '../Actions/userAction';
 import { Pagination } from '@material-ui/lab';
 import debounce from 'lodash.debounce';
 
 const Dashbord = () => {
-
-    ///////////////////////// For Navigate Page /////////////////////////
-    const history = useHistory();
 
     //////////////////////////////////// useState Start /////////////////////////
 
@@ -19,13 +16,10 @@ const Dashbord = () => {
 
     ///////////////////////// For Maping Data /////////////////////////
     const userData = useSelector(state => state.userData);
+
     const pageNumber = useSelector(state => state.pageNumber);
-
     const LoginUser = useSelector(state => state.LoginUser);
-
     const DeleteUser = useSelector(state => state.DeleteUser);
-
-    console.log("DeleteUser",DeleteUser);
     
     //////////////// Dispatch the Api Request ///////////////////
     const dispatch = useDispatch();
@@ -34,11 +28,11 @@ const Dashbord = () => {
     const deleteUser = (id) => {
         window.confirm("Are You Sure?")
             dispatch(delete_User(id))
-
     }
 
     //////////////// For Searching ////////////////
     const handleSearch = debounce((value) => {
+        setPage(1)
         setRequest(value)
     }, 500)
     
@@ -61,7 +55,6 @@ const Dashbord = () => {
             <div className='searchbar'>
                 <input type="search" placeholder='Search Here...' onChange={(e) => handleSearch(e.target.value)} />        
             </div>
-
             
             <div>                    
                 <button onClick={() => setSort("ascending")}>Ascending</button>&nbsp;
@@ -123,8 +116,7 @@ const Dashbord = () => {
                 </div></>) : (<>
                         <div><h1>NO DATA FOUND</h1></div>
                 </>)
-            }
-            
+            }            
         </>
     )
 }

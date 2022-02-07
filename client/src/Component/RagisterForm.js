@@ -13,7 +13,6 @@ import { toast } from 'react-toastify';
 const RegForm = () => {
     //Get Edited User Id
     const { id } = queryString.parse(window.location.search);
-    //console.log(id);
 
     ///////////////////For Navigate Page ////////////
     const history = useHistory();
@@ -28,17 +27,17 @@ const RegForm = () => {
     const [cityId, setCityId] = useState('')    // Set City Id
     const [employee, setEmployee] = useState([]) //For store the Edited User Data
 
-    //console.log(employee.email)
-
     //////////////////////////////////// useState End /////////////////////////
 
     //////////////////////////////// Get responce of the Api Requeste ////////////////////////////////
-    // const userList = useSelector(state => state.userList)
     const userData = useSelector(state => state.userData) //maping state
 
+    //////////////////////////////// Get Country State City Dropdown ////////////////////////////////
     const countryData = useSelector(state => state.countryData)
     const stateData = useSelector(state => state.stateData)
     const cityData = useSelector(state => state.cityData)
+
+    //////////////////////////////// Get responce of the Api Requeste ////////////////////////////////
     const emailExist = useSelector(state => state.emailExist)
     const registerToggle = useSelector(state => state.registerToggle)
 
@@ -66,13 +65,13 @@ const RegForm = () => {
             .max(20, 'Must be 20 characters or less')
             .required('Name is Required'),
         
-    phone: Yup.string()
+        phone: Yup.string()
             .min(10, 'Must be 10 digits or less')
             .max(12, 'Must be 12 digits or less')
             .required('Enter Your Phone'),
         
         profession: Yup.string()
-            .required('Profession is not valid!'),
+            .required('Profession is Required!'),
         
         salary1: Yup.number()
             .required('Enter Your salary1'),
@@ -89,6 +88,7 @@ const RegForm = () => {
         
         password: Yup.string()
             .min(6, 'must be 6 at least character')
+            .max(8, 'must be 8 at least character')
             .required('Password is required!'),
         
         confirmpassword: Yup.string()
@@ -105,7 +105,7 @@ const RegForm = () => {
             .required('City is required'),
     })
     //////////////////////////////// Formik Values ///////////////////////////////
-     const initialValues = {
+    const initialValues = {
             name: "",
             phone: "",
             profession: "",
@@ -119,6 +119,7 @@ const RegForm = () => {
             stateId: "",
             cityId: ""
     }
+
     const formik = useFormik({
         initialValues,
         validationSchema, 
@@ -131,8 +132,6 @@ const RegForm = () => {
                     toast.warning("Password Dose Not match")
                 } else {
                         dispatch(register_user(values))
-                        //history.push('/loginpage')
-                        formik.handleReset()                    
                 }                
             }
         },                        
@@ -156,7 +155,6 @@ const RegForm = () => {
     
     useEffect(() => {
         if (id) {
-            // dispatch(edit_User(id))
             setEmployee(edit_User)
             
         }
@@ -185,18 +183,18 @@ const RegForm = () => {
     useEffect(() => {
         dispatch(city(stateId))
     }, [stateId, dispatch])
+
     return (
         <>
             <div>
-                    <h1>Registration Form</h1>                    
+                {!id ? <h1>Registration Form</h1> : null}    
+                                    
                 <form onSubmit={formik.handleSubmit}>                    
                     <input type="text"
                         name="name"
                         placeholder='Enter Employee Name'
                         onChange={formik.handleChange}
                         {...formik.getFieldProps("name")}
-                        //style={{borderColor: errors.name && touched.name ? 'red' : 'inherit'}}
-
                     /><br />
                     {formik.touched.name && formik.errors.name ? (
                         <div className="fv-plugins-message-container">
@@ -388,9 +386,8 @@ const RegForm = () => {
                 
                 <div>   
                     {
-                        id ? null : <p>already registered <NavLink to='/loginpage'>Login</NavLink></p>
-                    } 
-                     
+                        !id ? <p>already registered <NavLink to='/loginpage'>Login</NavLink></p> : null
+                    }                      
                 </div>
             </div>
         </>

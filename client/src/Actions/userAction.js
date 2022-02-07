@@ -5,18 +5,19 @@ import { DELETE_USER } from "./actionType";
 toast.configure()
 
 //////////////////////////////////// USER ACTIONS START ////////////////////////////////////
+
 ///////////////////////// For Register user /////////////////////////
 export const register_user = (values) => dispatch => {
     return (
        axios.post(`/signUp`, values)
             .then((res) => {
-                dispatch({ type: "REGISTER_USER", payload: values })
                 const result = res.data
                 console.log(result);
                 if (result === "Email already Exists") {
                 toast.error(result, { position: toast.POSITION.TOP_LEFT, autoClose:2000 })
                 } else {
-                toast.success(result, { position: toast.POSITION.TOP_LEFT, autoClose:2000 });
+                    toast.success(result, { position: toast.POSITION.TOP_LEFT, autoClose: 2000 });
+                    dispatch({ type: "REGISTER_USER", payload: values })                    
                 }
             })
             .catch(error => {
@@ -26,6 +27,7 @@ export const register_user = (values) => dispatch => {
 
 }
 
+//////////////////////// Register Toggle Action /////////////////////////
 export const register_Toggle = () => dispatch => {
     return (
         dispatch({type:"REGISTER_TOGGLE"})
