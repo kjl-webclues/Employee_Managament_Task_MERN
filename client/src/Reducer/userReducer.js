@@ -1,3 +1,5 @@
+import { CHECK_COOKIE, CITY, COUNTRY, DELETE_UPLODED_FILE, DELETE_USER, EDIT_USER, GET_UPLOAD_FILES, GET_USER, LOGIN_USER, LOGOUT_USER, REGISTER_TOGGLE, REGISTER_USER, SET_LOADER, STATE, UPDATE_USER, UPLOAD_FILES } from "../Actions/actionType"
+
 const initialState = {
     userData: [],
     loginStatus: false,
@@ -8,30 +10,34 @@ const initialState = {
     LoginUser: '',
     DeleteUser: false,
     emailExist: false,
-    registerToggle: false
+    registerToggle: false,
+    uploadFile: [],
+    loader: true,
+    FilePage: [],
+    
 }
 
 const userReducer = (state = initialState, action) => {
     switch (action.type) {
-        case "REGISTER_USER":
+        case REGISTER_USER:
             return {
                 ...state,
                 registerToggle: true
             }
         
-        case "REGISTER_TOGGLE":
+        case REGISTER_TOGGLE:
             return {
                 ...state,
                 registerToggle: false
             }
         
-        case "LOGIN_USER":
+        case LOGIN_USER:
             return {
                 ...state,
                 loginStatus: true
             }
         
-        case "GET_USER":
+        case GET_USER:
             return {
                 ...state,
                 userData: action.payload.users,
@@ -40,45 +46,84 @@ const userReducer = (state = initialState, action) => {
                 emailExist: false
             }
         
-        case "EDIT_USER":
+        case EDIT_USER:
             return {
                 ...state
             }
         
-        case "UPDATE_USER":
+        case UPDATE_USER:
             return {
                 ...state,
                 emailExist: true
             }
         
-        case "DELETE_USER":
-            console.log("delete", action.payload);
+        case DELETE_USER:
             return {
                 ...state,
                 loginStatus: action.payload,
                 DeleteUser: true,
             }
         
-        case "LOGOUT_USER":
+        case LOGOUT_USER:
             return {
                 ...state,
                 loginStatus: false
             }
-        case "COUNTRY":
+        
+        case COUNTRY:
             return {
                 ...state,
                 countryData: action.payload
             }
-        case "STATE":
+        
+        case STATE:
             return {
                 ...state,
                 stateData: action.payload
             }
-        case "CITY":
+        
+        case CITY:
             return {
                 ...state,
                 cityData: action.payload
-            }        
+            }   
+        
+        case UPLOAD_FILES:
+            return {
+                ...state,
+                loader: false
+            }
+        
+        case SET_LOADER:
+            return {
+                ...state,
+                loader: true
+            }
+        
+        case GET_UPLOAD_FILES:
+            console.log(action.payload.files);
+            return {
+                ...state,
+                uploadFile: action.payload.files,
+                FilePage: action.payload.totalPage,
+                DeleteUser: false
+            }
+        
+        case CHECK_COOKIE: {
+            return {
+                ...state,
+                loginStatus: action.payload.loginStatus
+            }
+        }
+            
+        case DELETE_UPLODED_FILE: {
+            return {
+                ...state,
+                DeleteUser: true
+            }
+        }
+        
+            
         default:
             return state
     }

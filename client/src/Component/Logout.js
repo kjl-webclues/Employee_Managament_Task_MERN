@@ -13,7 +13,7 @@ const Logout = () => {
 
     useEffect(() => {
         Apidispatch(logout_User());
-        history.push('loginpage')
+        history.push('/loginpage')
     }, [])
  
     return (

@@ -11,7 +11,9 @@ const Navbar = () => {
 
         if (loginStatus) {
             return (
-                <>                    
+                <>  
+                    <NavLink to='/dashbord'><button>Dashbord</button></NavLink>                    
+                    <NavLink to='/upload'><button>FileUpload</button></NavLink>
                     <NavLink to='/Logout'><button>Logout</button></NavLink>
                 </>
             )

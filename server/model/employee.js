@@ -7,31 +7,24 @@ const validator = require('validator')
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
-        required : true
     },
     profession: {
         type: String,
-        required: true
     },
     phone: {
         type: Number, 
-        required: true
     },
     salary1: {
         type: Number,
-        required: true
     },
     salary2: {
         type: Number,
-        required: true
     },
     salary3: {
         type: Number,
-        required: true
     },
     email: {
         type: String, 
-        required: true,
         unique: true,
         //Validate EmailId
         validate(value) {
@@ -42,29 +35,43 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true
     },
     confirmpassword: {
         type: String,
-        required: true
     },
     countryId: {
         type: mongoose.Types.ObjectId, ref: 'Country',
-        required: true
     },
     stateId: {
         type: mongoose.Types.ObjectId, ref: 'State',
-        required: true
     },
     cityId: {
         type: mongoose.Types.ObjectId, ref: 'City',
-        required: true
     },
+
+    Files: [
+    {
+        
+        fileName: {
+            type: String
+        },
+        fileType: {
+            type: String
+        },
+        filePath: {
+            type: String
+        },
+        public_Id: {
+            type: String
+        },
+    }
+    ],
+
     Token: [
         {
             token: {
                 type: String,
-                required: true
+                // required: true
             }
         }
     ]

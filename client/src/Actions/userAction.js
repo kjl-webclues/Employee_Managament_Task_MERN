@@ -1,7 +1,7 @@
 import axios from "axios";
 import { toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-import { DELETE_USER } from "./actionType";
+import { CHECK_COOKIE, DELETE_UPLODED_FILE, DELETE_USER, GET_UPLOAD_FILES, SET_LOADER, UPLOAD_FILES } from "./actionType";
 toast.configure()
 
 //////////////////////////////////// USER ACTIONS START ////////////////////////////////////
@@ -55,7 +55,7 @@ export const get_User = (page,sort,Request) => dispatch => {
         axios.get(`/getUser/?page=${page}&sort=${sort}&Request=${Request}`)
             .then(res => {
                 const getUserData = res.data;
-                //console.table(getUserData)
+                console.table(getUserData)
                 dispatch({ type: "GET_USER" , payload: getUserData })            
             })
             .catch(error => {
@@ -83,8 +83,7 @@ export const update_User = (id, values, email) => dispatch => {
     return (
         axios.put(`/updateUser/${id}/${email}`, values)
             .then(res => {
-                toast.success("Employee Updated Successfully!", { position: toast.POSITION.TOP_LEFT, autoClose:2000 });
-                
+                toast.success("Employee Updated Successfully!", { position: toast.POSITION.TOP_LEFT, autoClose:2000 });                
                 dispatch({ type: "UPDATE_USER" })
             })
             .catch(error => {
@@ -113,7 +112,7 @@ export const delete_User = (id) => dispatch => {
 export const logout_User = () => dispatch => {
     return (
         axios.get(`/logout`)
-        .then(res => {
+            .then(res => {
                 const userData = res.data;
                 dispatch({ type: "LOGOUT_USER", payload: userData })
             })
@@ -126,7 +125,7 @@ export const logout_User = () => dispatch => {
 ///////////////////////// For Country DropdownList /////////////////////////
 export const country = () => dispatch => {
     axios.get(`/getCountry`)
-        .then(res => {
+            .then(res => {
                 const userData = res.data;
                 dispatch({ type: "COUNTRY", payload: userData })
             })
@@ -138,7 +137,7 @@ export const country = () => dispatch => {
 // ///////////////////////// For State DropdownList /////////////////////////
 export const state = (countryId) => dispatch => {
     axios.get(`/getState/${countryId}`)
-        .then(res => {
+            .then(res => {
             const userData = res.data;
                 dispatch({ type: "STATE", payload: userData })
             })
@@ -150,7 +149,7 @@ export const state = (countryId) => dispatch => {
 // ///////////////////////// For City DropdownList /////////////////////////
 export const city = (stateId) => dispatch => {
     axios.get(`/getCity/${stateId}`)
-        .then(res => {
+            .then(res => {
             const userData = res.data;
                 dispatch({ type: "CITY", payload: userData })
             })
@@ -158,6 +157,63 @@ export const city = (stateId) => dispatch => {
                 console.log("error", error);
             })
 }
+
+// ///////////////////////// For Upload UserFile ////////////////////////////
+export const upload_Files = (file) => dispatch => {
+    axios.post('/uploadFile',file)
+        .then((res) => {
+            const msg = res.data.msg
+            toast.success(msg, { position: toast.POSITION.TOP_LEFT, autoClose: 2000 });
+            dispatch({type: UPLOAD_FILES, payload: res.data})
+            })
+        .catch(error => {
+                toast.error(error, { position: toast.POSITION.TOP_LEFT, autoClose:2000 });            
+            })
+}
+
+// ///////////////////////// For Get UploadFileList ////////////////////////////
+export const get_UploadFile = (page) => dispatch => {
+    axios.get(`/getListFile/?page=${page}`)
+        .then((res) => {
+            const userData = res.data
+            console.log("userData", userData);
+            dispatch({ type: GET_UPLOAD_FILES, payload: userData })
+        })
+        .catch(error => {
+            console.log('error', error);
+        })
+}
+
+// ///////////////////////// For Delete UploadFileFile ////////////////////////////
+export const delete_UploadFile = (id) => dispatch => {
+    axios.delete(`/deleteFile/?id=${id}`)
+        .then(() => {
+            toast.success("File Deleted Successfully", { position: toast.POSITION.TOP_LEFT, autoClose: 2000 });            
+            dispatch({type: DELETE_UPLODED_FILE })
+        })
+        .catch(error => {
+            toast.error("File not Deleted", { position: toast.POSITION.TOP_LEFT, autoClose: 2000 });            
+            console.log('error', error);
+        })
+}
+
+/////////////////////////// For Check Cookie ////////////////////////////
+export const checkCookie = () => dispatch => {
+    axios.get(`/checkCookie`)
+        .then(res => {
+            const userData = res.data
+            dispatch({type: CHECK_COOKIE, payload: userData})
+        })
+        .catch(error => {
+            console.log('error', error)
+        })
+}
+
+/////////////////////////// For Set Loader ////////////////////////////
+export const set_Loader = () => dispatch => {
+    dispatch({type: SET_LOADER})
+}
+
 
 //////////////////////////////////// USER ACTIONS END ////////////////////////////////////
 

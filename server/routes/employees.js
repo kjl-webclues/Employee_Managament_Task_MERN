@@ -1,14 +1,107 @@
 const express = require('express')
 const router = express.Router()
+
+const cloudinary = require('../utils/cloudinary')
+const upload = require('../utils/multer')
+
 const User = require('../model/employee')
 const Country = require('../model/country')
 const State = require('../model/state')
 const City = require('../model/city')
-const authenticate = require ("../middleware/checkAuth")
+const authenticate = require("../middleware/checkAuth")
+const bcrypt = require('bcrypt')
+const fs = require('fs')
+const path = require('path')
+// const { uploader } = require('../utils/cloudinary')
+// const { type } = require('os')
+// const { format } = require('path')
+// const { Types } = require('mongoose')
+
+//////////////////////////////// For Upload File ////////////////////////////////
+router.post('/uploadFile', authenticate, upload.array("multi-files"), async (req, res) => {
+
+  try {
+
+        console.log("req.files", req.files)
+        const files = req.files;
+
+        for (const file of files) {
+            // const { path } = file;
+            const type = path.extname(file.originalname)
+            const uploadFiles = await cloudinary.uploader.upload(file.path, { resource_type: 'auto' })
+
+            const File = {
+                fileName: file.originalname,
+                filePath: uploadFiles.secure_url,
+                // fileType: uploadFiles.format,
+                fileType: type,
+                public_Id: uploadFiles.public_id
+            }
+
+            console.log("File", File);
+            await User.updateOne({ email: req.authenticateUser.email }, { $push: { Files: File } });
+        }
+        res.send({ msg: "File  Uploaded Succeessfully!! "});
+
+    } catch (err) {
+        res.status(400).send({ error: "File Not Upload" })
+
+    }
+})
+//////////////////////////////// For Get Uploaded File ////////////////////////////////
+router.get('/getListFile', authenticate, async (req, res) => {
+    const page = req.query.page
+    const limit = 8
+    let skip = (page - 1) * limit;
+    let totalFiles = req.authenticateUser.Files;
+    const aggregateQuery = [];
+
+
+    try {
+
+        let totalPage = Math.ceil(totalFiles.length / limit);
+        
+        aggregateQuery.push(
+            {
+                $match: { Files: req.authenticateUser.Files }
+            },
+            {
+                $project: {
+                    _id: 0, getPage: { $slice: ["$Files", skip, limit] },
+                }
+            },
+        );
+
+        const files = await User.aggregate([aggregateQuery]);
+
+        res.send({totalPage, files})
+    } catch (err) {
+        res.send('Error' + err)
+    }
+})
+
+//////////////////////////////// For Delete Uploaded File ////////////////////////////////
+router.delete('/deleteFile', authenticate, async (req, res) => {
+    try {
+        const id = req.query.id
+        
+        const FileDelete = await cloudinary.uploader.destroy(id, { resource_type: "raw" })
+        console.log("FileDelete", FileDelete);
+        
+        const deleteFile = await User.updateOne({ email: req.authenticateUser.email }, { $pull: { Files: { public_Id: id } } })
+        console.log("deleteFile", deleteFile);
+
+        res.send({msg: "Data Deleted Successfully"})
+        
+    } catch(error) {
+        res.status(400).send({error: "File Not Deleted"})
+    }
+    
+})
 
 //////////////////////////////// For Register User ////////////////////////////////
 router.post('/signUp', async (req, res) => {
-     const user = req.body
+    const user = req.body
     try {
         const emailExist = await User.findOne({ email: user.email })
         if (emailExist) {
@@ -26,12 +119,12 @@ router.post('/signUp', async (req, res) => {
 //////////////////////////////// For Login User ////////////////////////////////
 router.post('/signIn', async (req, res) => {
     try {
-        let token;        
+        let token;
         const { email, password } = req.body;
 
         //Details are filled properly
         if (!email || !password) {
-            return res.status(400).send({ error: "please field the data" });            
+            return res.status(400).send({ error: "please field the data" });
         }
 
         //user Exist
@@ -47,9 +140,9 @@ router.post('/signIn', async (req, res) => {
                 expiresIn: new Date(Date.now() + 1 * 3600 * 1000),
                 httpOnly: true
             })
-            res.send({msg: " user Login Successfully"});
+            res.send({ msg: " user Login Successfully" });
         } else {
-            res.status(400).send({ error: "Invalid Credientials!"});
+            res.status(400).send({ error: "Invalid Credientials!" });
         }
 
     } catch (err) {
@@ -60,16 +153,16 @@ router.post('/signIn', async (req, res) => {
 //////////////////////////////////// For Get User And Pagination/Requestin/sorting ///////////////////////////////////
 router.get('/getUser', authenticate, async (req, res) => {
     try {
-        const {page,sort,Request} = req.query
+        const { page, sort, Request } = req.query
         const limit = 5
         let skip = (page - 1) * limit;
         const LoginUser = req.authenticateUser
         //console.log(LoginUser)
         const aggregateQuery = []
-        
-        
-/////////////////////////////////////// Get Data of Collections ///////////////////////////////
-    //Get Country Collection  
+
+
+        /////////////////////////////////////// Get Data of Collections ///////////////////////////////
+        //Get Country Collection  
         aggregateQuery.push(
             {
                 $lookup: {
@@ -79,31 +172,31 @@ router.get('/getUser', authenticate, async (req, res) => {
                     as: "country"
                 }
             })
-        
-    //Get State Collection
-            aggregateQuery.push(
-                {
+
+        //Get State Collection
+        aggregateQuery.push(
+            {
                 $lookup: {
                     from: "states",
                     localField: "stateId",
                     foreignField: "_id",
                     as: "state"
                 }
-                })
-    
-    //Get City Collection
-            aggregateQuery.push(
-                {
+            })
+
+        //Get City Collection
+        aggregateQuery.push(
+            {
                 $lookup: {
                     from: "cities",
                     localField: "cityId",
                     foreignField: "_id",
                     as: "city"
                 }
-                })
-        
+            })
+
         //////////////////////////////// For Searching ////////////////////////////////
-        if(Request !== ""){
+        if (Request !== "") {
 
             aggregateQuery.push(
                 {
@@ -112,68 +205,68 @@ router.get('/getUser', authenticate, async (req, res) => {
                             { "name": RegExp("^" + Request, "i") },
                             { "phone": parseInt(Request) },
                             { "profession": RegExp("^" + Request, "i") },
-                            { "email": RegExp("^" + Request, "i") },                            
+                            { "email": RegExp("^" + Request, "i") },
                             { "country.countryName": RegExp("^" + Request, "i") },
                             { "state.stateName": RegExp("^" + Request, "i") },
-                            { "city.cityName": RegExp("^" + Request, "i") }   
-                        ]   
+                            { "city.cityName": RegExp("^" + Request, "i") }
+                        ]
                     }
-                },    
+                },
             )
-                        
+
             const matchUser = await User.aggregate([aggregateQuery]);
-            
-            let totalPage = Math.ceil(matchUser.length/limit);
-            
+
+            let totalPage = Math.ceil(matchUser.length / limit);
+
             aggregateQuery.push(
                 //////////////////////////////// sorting ////////////////////////////////
-                {$sort: { name : sort === "descending" ? -1 : 1}},
+                { $sort: { name: sort === "descending" ? -1 : 1 } },
 
                 //////////////////////////////// Pagination ////////////////////////////////
                 {
                     $skip: skip
                 },
                 {
-                    $limit: limit  
-                }  
-                     
+                    $limit: limit
+                }
+
             )
             ////////////////////////////////// Apply AggreagteQuery In User Collection ////////////////////////////////
             const users = await User.aggregate([aggregateQuery]);
-            
+
             ////////////////////////////////// Send Response ////////////////////////////////
-            res.send({users, totalPage, LoginUser});   
-        } 
-        else if(Request === ""){
+            res.send({ users, totalPage, LoginUser });
+        }
+        else if (Request === "") {
 
             ////////////////////////////////// Count Total Documents ////////////////////////////////
             const total = await User.countDocuments({});
 
             ////////////////////////////////// Count Total Pages ////////////////////////////////
-            let totalPage = Math.ceil(total/limit);
+            let totalPage = Math.ceil(total / limit);
 
             aggregateQuery.push(
-                
+
                 ////////////////////////////////// sorting ////////////////////////////////
-                {$sort: { name : sort === "descending" ? -1 : 1}},
+                { $sort: { name: sort === "descending" ? -1 : 1 } },
 
                 ////////////////////////////////// Pagination ////////////////////////////////
                 {
                     $skip: skip
                 },
                 {
-                    $limit: limit  
-                }  
+                    $limit: limit
+                }
             )
             // console.log(aggregateQuery);
             ////////////////////////////////// Apply AggreagteQuery In User Collection ////////////////////////////////
             const users = await User.aggregate([aggregateQuery]);
-            
+
             ////////////////////////////////// Send Response ////////////////////////////////
-            res.send({users, totalPage, LoginUser});   
+            res.send({ users, totalPage, LoginUser });
         }
-                
-    
+
+
     } catch (err) {
         res.send('Error' + err)
     }
@@ -190,7 +283,7 @@ router.get('/editUser/:id', authenticate, async (req, res) => {
 })
 
 //////////////////////////////// For Update Edited User ////////////////////////////////
-router.put('/updateUser/:id/:email', authenticate,  async (req, res) => {
+router.put('/updateUser/:id/:email', authenticate, async (req, res) => {
     try {
 
         //console.log(req.params);
@@ -198,28 +291,28 @@ router.put('/updateUser/:id/:email', authenticate,  async (req, res) => {
         const id = req.params.id;
         const updateValue = req.body;
         const email = req.params.email
-        
+
 
         if (updateValue.email !== email) {
             const emailExist = await User.findOne({ email: updateValue.email });
 
             if (emailExist) {
-                return res.status(400).send({error:"Email already in use"})
+                return res.status(400).send({ error: "Email already in use" })
             } else {
                 await User.findByIdAndUpdate(id, updateValue, { new: true });
                 res.json('Employee Updated Successfully!')
             }
         } else {
             await User.findByIdAndUpdate(id, updateValue, { new: true });
-                res.json('Employee Updated Successfully!')
-        } 
+            res.json('Employee Updated Successfully!')
+        }
     } catch (err) {
         res.send('Error' + err)
     }
 })
 
 //////////////////////////////// For Delete User ////////////////////////////////
-router.delete('/deleteUser/:email', authenticate, async (req, res) => { 
+router.delete('/deleteUser/:email', authenticate, async (req, res) => {
     //console.log(req.params.email);
     try {
         if (req.authenticateUser.email === req.params.email) {
@@ -232,10 +325,10 @@ router.delete('/deleteUser/:email', authenticate, async (req, res) => {
         } else {
             const loginStatus = true
 
-            await User.findOneAndDelete({email: req.params.email});
+            await User.findOneAndDelete({ email: req.params.email });
             res.send(loginStatus)
-        }        
-        
+        }
+
     } catch (err) {
         res.send('Error' + err)
     }
@@ -276,8 +369,8 @@ router.get('/getCountry', async (req, res) => {
 router.get('/getState/:countryId', async (req, res) => {
     try {
         const id = req.params.countryId
-        aggregateQuery =[{
-            $match: {"countryId" :id}
+        aggregateQuery = [{
+            $match: { "countryId": id }
         }]
 
         const userData = await State.aggregate(aggregateQuery)
@@ -291,14 +384,30 @@ router.get('/getState/:countryId', async (req, res) => {
 router.get('/getCity/:stateId', async (req, res) => {
     try {
         const id = req.params.stateId
-        aggregateQuery =[{
-            $match: {"stateId" : id }
+        aggregateQuery = [{
+            $match: { "stateId": id }
         }]
 
         const userData = await City.aggregate(aggregateQuery)
         res.send(userData)
     } catch (err) {
         res.send('Error' + err)
+    }
+})
+
+// //////////////////////////////// For Check Cookie ////////////////////////////////
+
+router.get('/checkCookie', async (req, res) => {
+    try {
+        if (req.cookies.jwtLogin) {
+            const loginStatus = true;
+            res.send({loginStatus})
+        } else {
+            const loginStatus = false;
+            res.send({loginStatus})
+        }
+    } catch(error) {
+        res.send(error)
     }
 })
 

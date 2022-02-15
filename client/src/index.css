@@ -137,3 +137,23 @@ td {
   color: red;
   margin-left: 40px;
 }
+.fileupload {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+/* .mapFile {
+margin-left: 5%;
+} */
+
+.FileDelete{
+  background-color: rgb(233, 168, 168);
+  color: white;
+  padding: 10px 10px;
+  border: none;
+  border-radius: 10%;
+  cursor: pointer;
+  opacity: 0.9;
+  font-size: medium;
+  margin-left: 1%;
+}

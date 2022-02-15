@@ -13,4 +13,8 @@ export const SEARCH_FIELD = 'SEARCH_FIELD'
 export const COUNTRY = 'COUNTRY'
 export const STATE = 'STATE'
 export const CITY = 'CITY' 
-
+export const UPLOAD_FILES = "UPLOAD_FILES"
+export const GET_UPLOAD_FILES = "GET_UPLOAD_FILES"
+export const DELETE_UPLODED_FILE = "DELETE_UPLODED_FILE"
+export const CHECK_COOKIE = "CHECK_COOKIE"
+export const SET_LOADER = "SET_LOADER"
