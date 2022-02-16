@@ -1,7 +1,7 @@
 import axios from "axios";
 import { toast } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
-import { CHECK_COOKIE, DELETE_UPLODED_FILE, DELETE_USER, GET_UPLOAD_FILES, SET_LOADER, UPLOAD_FILES } from "./actionType";
+import { CHECK_COOKIE, DELETE_MULTIPLE_FILE, DELETE_UPLODED_FILE, DELETE_USER, GET_UPLOAD_FILES, SET_LOADER, UPLOAD_FILES } from "./actionType";
 toast.configure()
 
 //////////////////////////////////// USER ACTIONS START ////////////////////////////////////
@@ -167,7 +167,8 @@ export const upload_Files = (file) => dispatch => {
             dispatch({type: UPLOAD_FILES, payload: res.data})
             })
         .catch(error => {
-                toast.error(error, { position: toast.POSITION.TOP_LEFT, autoClose:2000 });            
+            dispatch({type: UPLOAD_FILES})                
+            toast.error("File Not Supported", { position: toast.POSITION.TOP_LEFT, autoClose:2000 });            
             })
 }
 
@@ -176,7 +177,6 @@ export const get_UploadFile = (page) => dispatch => {
     axios.get(`/getListFile/?page=${page}`)
         .then((res) => {
             const userData = res.data
-            console.log("userData", userData);
             dispatch({ type: GET_UPLOAD_FILES, payload: userData })
         })
         .catch(error => {
@@ -184,7 +184,7 @@ export const get_UploadFile = (page) => dispatch => {
         })
 }
 
-// ///////////////////////// For Delete UploadFileFile ////////////////////////////
+// ///////////////////////// For Delete SingleFile ////////////////////////////
 export const delete_UploadFile = (id) => dispatch => {
     axios.delete(`/deleteFile/?id=${id}`)
         .then(() => {
@@ -197,7 +197,21 @@ export const delete_UploadFile = (id) => dispatch => {
         })
 }
 
-/////////////////////////// For Check Cookie ////////////////////////////
+// ///////////////////////// For Delete MultipleFile ////////////////////////////
+export const delete_MultipleFile = (file) => dispatch => {
+    axios.put(`/deleteMultipleFile`, file)
+        .then(() => {
+            toast.success("File Deleted Successfully", { position: toast.POSITION.TOP_LEFT, autoClose: 2000 });
+            dispatch({type: DELETE_MULTIPLE_FILE})
+        })
+        .catch(error => {
+            dispatch({type: DELETE_MULTIPLE_FILE})
+            toast.error("Files not Deleted", { position: toast.POSITION.TOP_LEFT, autoClose: 2000 });            
+            console.log('error', error);
+        })
+}
+
+/////////////////////////// For Check Cookie ///////////////////////////////////////
 export const checkCookie = () => dispatch => {
     axios.get(`/checkCookie`)
         .then(res => {

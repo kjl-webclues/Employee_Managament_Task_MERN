@@ -28,8 +28,7 @@ const employeeesRouter = require('./routes/employees');
 const User = require('./model/employee');
 app.use('/', employeeesRouter);
 
-
 //server listen
-app.listen(5008, () => { 
-console.log('we are live on port 5008')
+app.listen(7000, () => { 
+console.log('we are live on port 7000')
 })

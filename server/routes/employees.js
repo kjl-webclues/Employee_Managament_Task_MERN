@@ -12,6 +12,7 @@ const authenticate = require("../middleware/checkAuth")
 const bcrypt = require('bcrypt')
 const fs = require('fs')
 const path = require('path')
+const { array } = require('../utils/multer')
 // const { uploader } = require('../utils/cloudinary')
 // const { type } = require('os')
 // const { format } = require('path')
@@ -22,7 +23,7 @@ router.post('/uploadFile', authenticate, upload.array("multi-files"), async (req
 
   try {
 
-        console.log("req.files", req.files)
+        // console.log("req.files", req.files)
         const files = req.files;
 
         for (const file of files) {
@@ -38,7 +39,7 @@ router.post('/uploadFile', authenticate, upload.array("multi-files"), async (req
                 public_Id: uploadFiles.public_id
             }
 
-            console.log("File", File);
+            // console.log("File", File);
             await User.updateOne({ email: req.authenticateUser.email }, { $push: { Files: File } });
         }
         res.send({ msg: "File  Uploaded Succeessfully!! "});
@@ -51,10 +52,11 @@ router.post('/uploadFile', authenticate, upload.array("multi-files"), async (req
 //////////////////////////////// For Get Uploaded File ////////////////////////////////
 router.get('/getListFile', authenticate, async (req, res) => {
     const page = req.query.page
-    const limit = 8
+    const limit = 5
     let skip = (page - 1) * limit;
     let totalFiles = req.authenticateUser.Files;
     const aggregateQuery = [];
+    const LoginUser = req.authenticateUser
 
 
     try {
@@ -74,7 +76,7 @@ router.get('/getListFile', authenticate, async (req, res) => {
 
         const files = await User.aggregate([aggregateQuery]);
 
-        res.send({totalPage, files})
+        res.send({totalPage, files, LoginUser})
     } catch (err) {
         res.send('Error' + err)
     }
@@ -92,6 +94,30 @@ router.delete('/deleteFile', authenticate, async (req, res) => {
         console.log("deleteFile", deleteFile);
 
         res.send({msg: "Data Deleted Successfully"})
+        
+    } catch(error) {
+        res.status(400).send({error: "File Not Deleted"})
+    }
+    
+})
+
+//////////////////////////////// For MultiDelete Uploaded File ////////////////////////////////
+router.put('/deleteMultipleFile', authenticate, async (req, res) => {
+    try {
+        const files = req.body
+        console.log("files", files);
+
+        for (const file of files) {
+            
+            // const FileDelete = await cloudinary.uploader.destroy(file, { resource_type: "raw" })
+            // console.log("FileDelete", FileDelete);
+        
+            const deleteFile = await User.updateOne({ email: req.authenticateUser.email }, { $pull: { Files: { public_Id: file } } })
+            console.log("deleteFile", deleteFile);
+
+        }
+        res.send({ msg: "Data Deleted Successfully" })
+
         
     } catch(error) {
         res.status(400).send({error: "File Not Deleted"})
@@ -138,7 +164,6 @@ router.post('/signIn', async (req, res) => {
             //Store the Token in Cookie
             res.cookie("jwtLogin", token, {
                 expiresIn: new Date(Date.now() + 1 * 3600 * 1000),
-                httpOnly: true
             })
             res.send({ msg: " user Login Successfully" });
         } else {
