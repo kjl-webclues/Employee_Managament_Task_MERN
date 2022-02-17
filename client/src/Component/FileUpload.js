@@ -5,13 +5,14 @@ import { delete_MultipleFile, delete_UploadFile, get_UploadFile, set_Loader, upl
 import { Pagination } from "@material-ui/lab";
 import 'react-toastify/dist/ReactToastify.css';
 import { toast } from "react-toastify";
+// import Checkbox from "@mui/material/Checkbox"
 toast.configure()
 
 
 const FileUpload = () => {
     /////////////////////////// For File Upload ///////////////////////////
     const [multiInputState, setMultiInputState] = useState("asc");
-    const [loaderFile, setLoaderFile] = useState(false)
+    // const [loaderFile, setLoaderFile] = useState(false)
 
     const [checkboxDelete, setCheckboxDelete] = useState([])
 
@@ -37,7 +38,7 @@ const FileUpload = () => {
     const multipleFileChange = (e) => {
         setMultiInputState({ ...multiInputState, ...e.target.files })
     }
-    
+    console.log("loaderFile",loader);
     /////////////////////////// Form Submit Event ///////////////////////////
     const handleSubmit = (event) => {
         if (!multiInputState) {
@@ -46,13 +47,14 @@ const FileUpload = () => {
         } else {
             /////////////////////////// Form Submit Event ///////////////////////////
             event.preventDefault()
-            setLoaderFile(true)
-            console.log("loder", loader);
-            event.target.reset();
+
+            dispatch(set_Loader())
+
             const formData = new FormData();
             for (let i = 0; i < 5; i++) {
                 formData.append("multi-files", multiInputState[i]);
             }
+            event.target.reset();
             dispatch(upload_Files(formData))
             setMultiInputState('');
         }
@@ -60,23 +62,28 @@ const FileUpload = () => {
 
     /////////////////////////// For Single Delete File ///////////////////////////
     const handleDeleteFile = (id) => {
-        window.confirm("Are You Sure?")
-        setLoaderFile(true)
-        setCheckboxDelete([])
-        dispatch(set_Loader())
-        dispatch(delete_UploadFile(id))
+        if (window.confirm("Are You Sure?")) {
+            setCheckboxDelete([])
+
+            dispatch(set_Loader())
+
+            dispatch(delete_UploadFile(id))
+        }
     }
     
     /////////////////////////// For Multiple Delete File ///////////////////////////
     const handleMultiDelete = (e) => {
-        if (checkboxDelete === null) {
+        if (checkboxDelete.length <= 0) {
             toast.error("Please Select File", {position: toast.POSITION.TOP_RIGHT, autoClose: 2000})
             e.preventDefault();
         } else {
         e.preventDefault()
-        window.confirm("Are You Sure")
-        dispatch(set_Loader());
-        dispatch(delete_MultipleFile(checkboxDelete));
+            if (window.confirm("Are You Sure")) {
+                
+                dispatch(set_Loader());
+                
+                dispatch(delete_MultipleFile(checkboxDelete));
+        }        
         }
     }
 
@@ -95,16 +102,16 @@ const FileUpload = () => {
 /////////////////////////// For Get File ///////////////////////////
     useEffect(() => {
         dispatch(get_UploadFile(pageNumber))
-    }, [ loader, pageNumber,DeleteUser, dispatch])
+    }, [ loader, pageNumber, dispatch])
     
 
 /////////////////////////// For Set Loader ///////////////////////////
-    useEffect(() => {
-        if (loader === false || DeleteUser === true) {
-            setLoaderFile(false)
-            dispatch(set_Loader())
-        }
-    }, [loader, DeleteUser, dispatch])
+    // useEffect(() => {
+    //     if (loader === false || DeleteUser === true) {
+    //         // setLoaderFile(false)
+    //         dispatch(set_Loader())
+    //     }
+    // }, [loader, DeleteUser, dispatch])
 
     return (
         <>
@@ -112,7 +119,7 @@ const FileUpload = () => {
             <form onSubmit={handleSubmit}>
                 <div className="fileupload">
                     {
-                        loaderFile ? (
+                        loader ? (
                             <>  
                                 <input type='file' disabled onChange={(e) => multipleFileChange(e)} multiple></input>                                                                    
                                 <button disabled >Upload</button>
@@ -133,7 +140,7 @@ const FileUpload = () => {
             </form>
 
             {
-                loaderFile ? (                     
+                loader ? (                     
                     <div className='col-md-15 my-3 text-center'>
                         <h1>Loading ...</h1>                        
                         </div>                    
@@ -145,55 +152,49 @@ const FileUpload = () => {
                 {
                     uploadFile[0] && uploadFile[0].getPage.length > 0 && uploadFile[0].getPage.map((elem) => {
                         return (
-                            <>
+                            <>                                
                                 {elem.fileType === ".pdf" ? (
-                                    <>
-                                        <h6>
-                                            <input type='checkbox' onChange={() => handleChange(elem.public_Id)} />                                            
+                                    <>      
+                                            <h6>{elem.fileName}</h6>                                        
+                                            <input type='checkbox' value={elem.public_Id}  onChange={() => handleChange(elem.public_Id) } />                                            
                                             <img width='4%' src='https://icons.iconarchive.com/icons/graphicloads/filetype/128/pdf-icon.png' alt='PDF' />
-                                            {elem.fileName}<br />
                                             <button className="FileDelete" onClick={() => handleDeleteFile(elem.public_Id)}>Delete</button>
-                                            </h6>
                                     </>
                                 ) : null
                                 }
                                 {elem.fileType === ".jpg" || elem.fileType === ".jpeg" || elem.fileType === ".png" || elem.fileType === ".gif" ? (
                                     <>
-                                        <h6>
-                                            <input type='checkbox'  onChange={() => handleChange(elem.public_Id) } />                                            
+                                            <h6>{elem.fileName}</h6>
+                                            <input type='checkbox' value={elem.public_Id}  onChange={() => handleChange(elem.public_Id) } />                                            
                                             <img width='4%' src={elem.filePath} alt='JPG' />
-                                            {elem.fileName}<br />
-                                            <button className="FileDelete" onClick={() => handleDeleteFile(elem.public_Id)}>Delete</button></h6>
+                                            <button className="FileDelete" onClick={() => handleDeleteFile(elem.public_Id)}>Delete</button>
                                     </>
                                 ) : null
                                 }
                                 {elem.fileType === ".xml" ? (
-                                    <>
-                                        <h6>
-                                            <input type='checkbox'  onChange={() =>  handleChange(elem.public_Id) } />                                            
+                                    <>       
+                                            <h6>{elem.fileName}</h6>
+                                            <input type='checkbox' value={elem.public_Id}  onChange={() =>  handleChange(elem.public_Id) } />                                            
                                             <img width='4%' src='https://as1.ftcdn.net/v2/jpg/04/46/40/84/1000_F_446408465_aqlGBK2DsZTvhkcDqV6rkaOvvEMtVmau.jpg' alt='XML' />
-                                            {elem.fileName}<br />
-                                            <button className="FileDelete" onClick={() => handleDeleteFile(elem.public_Id)}>Delete</button></h6>
+                                            <button className="FileDelete" onClick={() => handleDeleteFile(elem.public_Id)}>Delete</button>
                                     </>
                                 ) : null
                                 }
                                 {elem.fileType === ".txt" ? (
                                     <>
-                                        <h6>
-                                            <input type='checkbox'  onChange={() =>  handleChange(elem.public_Id) } />                                            
+                                            <h6>{elem.fileName}</h6>
+                                            <input type='checkbox' value={elem.public_Id}  onChange={() =>  handleChange(elem.public_Id) } />                                            
                                             <img width='4%' src='https://cdn-icons.flaticon.com/png/512/202/premium/202313.png?token=exp=1644907668~hmac=a423c46355a1bdfbeede81a7ebb6cde2' alt='TXT' />
-                                            {elem.fileName}<br />
-                                            <button className="FileDelete" onClick={() => handleDeleteFile(elem.public_Id)}>Delete</button></h6>
+                                            <button className="FileDelete" onClick={() => handleDeleteFile(elem.public_Id)}>Delete</button>
                                     </>
                                 ) : null
                                 }
                                 {elem.fileType === ".doc" || elem.fileType === ".docx" ? (
                                     <>
-                                        <h6>
-                                            <input type='checkbox'  onChange={() =>  handleChange(elem.public_Id) } />                                            
+                                            <h6>{elem.fileName}</h6>
+                                            <input type='checkbox' value={elem.public_Id}  onChange={() =>  handleChange(elem.public_Id) } />                                            
                                             <img width='4%' src='https://cdn4.vectorstock.com/i/1000x1000/62/88/monochrome-round-doc-file-icon-vector-5106288.jpg' alt='TXT' />
-                                            {elem.fileName}<br />
-                                            <button className="FileDelete" onClick={() => handleDeleteFile(elem.public_Id)}>Delete</button></h6>
+                                            <button className="FileDelete" onClick={() => handleDeleteFile(elem.public_Id)}>Delete</button>
                                     </>
                                 ) : null
                                 }

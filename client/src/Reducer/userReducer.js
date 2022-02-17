@@ -12,7 +12,7 @@ const initialState = {
     emailExist: false,
     registerToggle: false,
     uploadFile: [],
-    loader: true,
+    loader: false,
     FilePage: [],
     // multipleDeleteToggle: false
     
@@ -90,6 +90,12 @@ const userReducer = (state = initialState, action) => {
                 cityData: action.payload
             }
         
+        case SET_LOADER:
+            return {
+                ...state,
+                loader: true
+        }
+        
         case UPLOAD_FILES:
             return {
                 ...state,
@@ -108,28 +114,22 @@ const userReducer = (state = initialState, action) => {
         case DELETE_UPLODED_FILE: 
             return {
                 ...state,
-                DeleteUser: true,
-                // loader:false
+                // DeleteUser: true,
+                loader:false
             }
         
         case DELETE_MULTIPLE_FILE:
             return {
                 ...state,
-                DeleteUser: true,
-                // loader:false
+                // DeleteUser: true,
+                loader:false
             }
         
         case CHECK_COOKIE: 
             return {
                 ...state,
                 loginStatus: action.payload.loginStatus
-            }        
-        
-        case SET_LOADER:
-            return {
-                ...state,
-                loader: true
-        }
+            }                
         
         default:
             return state

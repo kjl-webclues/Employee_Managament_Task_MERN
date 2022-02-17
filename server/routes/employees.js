@@ -13,6 +13,7 @@ const bcrypt = require('bcrypt')
 const fs = require('fs')
 const path = require('path')
 const { array } = require('../utils/multer')
+const { log } = require('console')
 // const { uploader } = require('../utils/cloudinary')
 // const { type } = require('os')
 // const { format } = require('path')
@@ -25,13 +26,22 @@ router.post('/uploadFile', authenticate, upload.array("multi-files"), async (req
 
         // console.log("req.files", req.files)
         const files = req.files;
-
-        for (const file of files) {
+        const invalidFileType = []
+      for (const file of files) {
+            
             // const { path } = file;
-            const type = path.extname(file.originalname)
-            const uploadFiles = await cloudinary.uploader.upload(file.path, { resource_type: 'auto' })
+          const type = path.extname(file.originalname)
+          if(type !== '.png' && type !== '.jpg' && type !== '.jpeg' && 
+               type !== '.doc' && type !== '.docx' && type !== '.txt' &&
+               type !== '.pdf' && type !== '.xml' && type !== '.gif'){
 
-            const File = {
+                invalidFileType.push(
+                    file.originalname
+                )
+          } else {
+                const uploadFiles = await cloudinary.uploader.upload(file.path, { resource_type: 'auto' })
+
+                const File = {
                 fileName: file.originalname,
                 filePath: uploadFiles.secure_url,
                 // fileType: uploadFiles.format,
@@ -41,8 +51,15 @@ router.post('/uploadFile', authenticate, upload.array("multi-files"), async (req
 
             // console.log("File", File);
             await User.updateOne({ email: req.authenticateUser.email }, { $push: { Files: File } });
+          }
+            
+      }
+      if (invalidFileType) {
+          console.log("invalidFileType", invalidFileType)
+            res.send(invalidFileType)
+      } else {
+            res.send({ msg: "File  Uploaded Succeessfully!! "});          
         }
-        res.send({ msg: "File  Uploaded Succeessfully!! "});
 
     } catch (err) {
         res.status(400).send({ error: "File Not Upload" })
@@ -52,7 +69,7 @@ router.post('/uploadFile', authenticate, upload.array("multi-files"), async (req
 //////////////////////////////// For Get Uploaded File ////////////////////////////////
 router.get('/getListFile', authenticate, async (req, res) => {
     const page = req.query.page
-    const limit = 5
+    const limit = 6;
     let skip = (page - 1) * limit;
     let totalFiles = req.authenticateUser.Files;
     const aggregateQuery = [];

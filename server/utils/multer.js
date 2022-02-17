@@ -15,12 +15,12 @@ module.exports = multer({
     },
     
     //fileFilter to filter file which u want to alow
-    fileFilter: (req, file, cb) => {
-        let ext = path.extname(file.originalname);
-        if (ext !== ".jpg" && ext !== ".jpeg" && ext !== ".png" && ext !== ".txt" && ext !== ".doc" && ext !== ".pdf" && ext !== ".docx" && ext !== ".gif" && ext !== ".xml") {
-            cb(new Error("File type is not supported"), false);
-            return;
-        }
-        cb(null, true);
-    },
+    // fileFilter: (req, file, cb) => {
+    //     let ext = path.extname(file.originalname);
+    //     if (ext !== ".jpg" && ext !== ".jpeg" && ext !== ".png" && ext !== ".txt" && ext !== ".doc" && ext !== ".pdf" && ext !== ".docx" && ext !== ".gif" && ext !== ".xml") {
+    //         cb(new Error("File type is not supported"), false);
+    //         return;
+    //     }
+    //     cb(null, true);
+    // },
 });
