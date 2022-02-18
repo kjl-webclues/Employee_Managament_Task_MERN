@@ -50,9 +50,9 @@ export const login_User = (values) => dispatch => {
 }
 
 ///////////////////////// For Get Request /////////////////////////
-export const get_User = (page,sort,Request) => dispatch => {
+export const get_User = (page,sort,Request,limit) => dispatch => {
     return (
-        axios.get(`/getUser/?page=${page}&sort=${sort}&Request=${Request}`)
+        axios.get(`/getUser/?page=${page}&sort=${sort}&Request=${Request}&limit=${limit}`)
             .then(res => {
                 const getUserData = res.data;
                 console.table(getUserData)
@@ -177,8 +177,8 @@ export const upload_Files = (file) => dispatch => {
 }
 
 // ///////////////////////// For Get UploadFileList ////////////////////////////
-export const get_UploadFile = (page) => dispatch => {
-    axios.get(`/getListFile/?page=${page}`)
+export const get_UploadFile = (page, limit) => dispatch => {
+    axios.get(`/getListFile/?page=${page}&limit=${limit}`)
         .then((res) => {
             const userData = res.data
             dispatch({ type: GET_UPLOAD_FILES, payload: userData })

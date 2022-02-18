@@ -12,6 +12,7 @@ const Dashbord = () => {
     const [request, setRequest] = useState(''); //For Searching 
     const [page, setPage] = useState(1); //For Pagination
     const [sort, setSort] = useState('ascending')//For Sorting
+    const [dropdown, setDropdown] = useState(5)//For Daynamic Pagination
     //////////////////////////////////// useState End /////////////////////////
 
     ///////////////////////// For Maping Data /////////////////////////
@@ -35,11 +36,19 @@ const Dashbord = () => {
         setPage(1)
         setRequest(value)
     }, 500)
+
+
+    //////////////// For Dropdown Pagination ////////////////
+
+    const handleDropdown = (e) => {
+        setDropdown(e.target.value)
+        console.log("Dropdown", dropdown);
+    }
     
-    //////////////// For Get Request ////////////////
+    //////////////// For Get Request ///////////////////////
     useEffect(() => {
-        dispatch(get_User(page,sort,request))        
-    }, [page, sort, request, dispatch, DeleteUser])
+        dispatch(get_User(page,sort,request, dropdown))        
+    }, [page, sort, request, dropdown,  dispatch, DeleteUser])
     
 
     return (        
@@ -62,6 +71,15 @@ const Dashbord = () => {
             </div> 
             
             <hr />
+            <select onClick={(e) => {handleDropdown(e)}}>
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="15">15</option>
+                    <option value="20">20</option>
+                    <option value="25">25</option>
+                    <option value="30">30</option>
+            </select>
+            
             {
                 pageNumber ? (<><div className='col-md-12  mx-auto'>
                         <table className='table table-hover'>
@@ -112,10 +130,12 @@ const Dashbord = () => {
                             shape='rounded'
                             variant='outlined'                    
                             onChange={(event, value) => { setPage(value) }}
-                        />
+                        />                                    
+                    
                 </div></>) : (<>
                         <div><h1>NO DATA FOUND</h1></div>
                 </>)
+                
             }            
         </>
     )

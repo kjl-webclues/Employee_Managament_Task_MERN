@@ -17,7 +17,6 @@ const FileUpload = () => {
     const [isCheckAll, setIsCheckAll] = useState(false);
     const [isCheck, setIsCheck] = useState([]);
 
-
     /////////////////////////// For Dispatch File ///////////////////////////
     const dispatch = useDispatch()
 
@@ -33,6 +32,9 @@ const FileUpload = () => {
     /////////////////////////// Pagination for UploadFile ///////////////////////////
     const FilePage = useSelector(state => state.FilePage)
     const [pageNumber, setPageNumber] = useState(1)
+
+    const [dropdown, setDropdown] = useState(5)
+
 
     ///////////////////////////// For Multiple File Upload ///////////////////////////
     const multipleFileChange = (e) => {
@@ -103,11 +105,18 @@ const FileUpload = () => {
         }
     };
     console.log("isCheck", isCheck);
+
+/////////////////////////// For Dropdown Pagination ///////////////////////////
+    const handleDropdown = (e) => {
+        setDropdown(e.target.value)
+    }
+
     
 /////////////////////////// For Get File ///////////////////////////
     useEffect(() => {
-        dispatch(get_UploadFile(pageNumber))
-    }, [loader, pageNumber, dispatch])
+        dispatch(get_UploadFile(pageNumber,dropdown))
+        setIsCheckAll(false)
+    }, [loader, pageNumber, dropdown, dispatch])
     
 /////////////////////////// Return Function Start ///////////////////////////
     return (
@@ -141,10 +150,18 @@ const FileUpload = () => {
                             handleClick={handleSelectAll}
                             isChecked={isCheckAll}
                         /><span class="label-text">Select All Checkbox</span>
-                </label>}                    
+                </label>}
+                
+                <select onClick={(e) => {handleDropdown(e)}}>
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="15">15</option>
+                    <option value="20">20</option>
+                    <option value="25">25</option>
+                    <option value="30">30</option>
+                </select>
             </div>
             
-
             {
                 loader ? (                     
                     <div className='col-md-15 my-3 text-center'>
@@ -241,19 +258,19 @@ const FileUpload = () => {
                                 }    
                             </>
                         )
-                    })
-                    
+                    })                    
                 }
                 
             </div>            
 
             <div>
-                <Pagination
+                
+                <Pagination                
                     count={FilePage}                            
                     shape='rounded'
                     variant='outlined'                    
-                    onChange={(event, value) => { setPageNumber(value) }}
-                />
+                    onChange={(event, value) => { setPageNumber(value) }}                    
+                />                
             </div>            
         </>
     );

@@ -64,7 +64,8 @@ router.post('/uploadFile', authenticate, upload.array("multi-files"), async (req
 //////////////////////////////// For Get Uploaded File ////////////////////////////////
 router.get('/getListFile', authenticate, async (req, res) => {
     const page = req.query.page
-    const limit = 6;
+    const limitFiles = req.query.limit
+    const limit = parseInt(limitFiles);
     let skip = (page - 1) * limit;
     let totalFiles = req.authenticateUser.Files;
     const aggregateQuery = [];
@@ -190,8 +191,11 @@ router.post('/signIn', async (req, res) => {
 router.get('/getUser', authenticate, async (req, res) => {
     try {
         const { page, sort, Request } = req.query
-        const limit = 5
-        let skip = (page - 1) * limit;
+        
+        const limitFile = req.query.limit
+        const limit = parseInt(limitFile)
+
+        let skip = (page - 1) * limit;        
         const LoginUser = req.authenticateUser
         //console.log(LoginUser)
         const aggregateQuery = []
