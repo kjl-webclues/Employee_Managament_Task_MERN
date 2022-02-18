@@ -162,11 +162,11 @@ export const city = (stateId) => dispatch => {
 export const upload_Files = (file) => dispatch => {
     axios.post('/uploadFile',file)
         .then((res) => {
-            if (res.data.length <= 0) {
+            if (res.data.length === 0) {
                 const msg = res.data.msg
                 toast.success(msg, { position: toast.POSITION.TOP_LEFT, autoClose: 2000 });
             } else {
-                toast.error(`${res.data} Not Uploded`, {position: toast.POSITION.TOP_CENTER, autoClose: 2000})
+                toast.error(`${res.data} ${res.data.length} Files Not Uploded`, {position: toast.POSITION.TOP_CENTER, autoClose: 2000})
             }            
             dispatch({type: UPLOAD_FILES, payload: res.data})
             })

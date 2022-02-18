@@ -5,16 +5,17 @@ import { delete_MultipleFile, delete_UploadFile, get_UploadFile, set_Loader, upl
 import { Pagination } from "@material-ui/lab";
 import 'react-toastify/dist/ReactToastify.css';
 import { toast } from "react-toastify";
-// import Checkbox from "@mui/material/Checkbox"
+import Checkbox from "./Checkbox";
 toast.configure()
 
 
 const FileUpload = () => {
     /////////////////////////// For File Upload ///////////////////////////
-    const [multiInputState, setMultiInputState] = useState("asc");
-    // const [loaderFile, setLoaderFile] = useState(false)
+    const [multiInputState, setMultiInputState] = useState();
 
-    const [checkboxDelete, setCheckboxDelete] = useState([])
+    /////////////////////////// useState   //////////////////////////
+    const [isCheckAll, setIsCheckAll] = useState(false);
+    const [isCheck, setIsCheck] = useState([]);
 
 
     /////////////////////////// For Dispatch File ///////////////////////////
@@ -23,6 +24,7 @@ const FileUpload = () => {
     /////////////////////////// For Map Uploaded FileList ///////////////////////////
     const uploadFile = useSelector(state => state.uploadFile)
 
+    /////////////////////////// For Login Authenticate User ///////////////////////////
     const LoginUser = useSelector(state => state.LoginUser);
 
     /////////////////////////// For Set Loader for UploadFile ///////////////////////////
@@ -32,13 +34,10 @@ const FileUpload = () => {
     const FilePage = useSelector(state => state.FilePage)
     const [pageNumber, setPageNumber] = useState(1)
 
-    const DeleteUser = useSelector(state => state.DeleteUser)
-
-    //For Multiple File Upload
+    ///////////////////////////// For Multiple File Upload ///////////////////////////
     const multipleFileChange = (e) => {
         setMultiInputState({ ...multiInputState, ...e.target.files })
     }
-    console.log("loaderFile",loader);
     /////////////////////////// Form Submit Event ///////////////////////////
     const handleSubmit = (event) => {
         if (!multiInputState) {
@@ -60,10 +59,10 @@ const FileUpload = () => {
         }
     }
 
-    /////////////////////////// For Single Delete File ///////////////////////////
+/////////////////////////// For Single Delete File ///////////////////////////
     const handleDeleteFile = (id) => {
         if (window.confirm("Are You Sure?")) {
-            setCheckboxDelete([])
+            setIsCheck([])
 
             dispatch(set_Loader())
 
@@ -71,48 +70,46 @@ const FileUpload = () => {
         }
     }
     
-    /////////////////////////// For Multiple Delete File ///////////////////////////
+/////////////////////////// For Multiple Delete File ///////////////////////////
     const handleMultiDelete = (e) => {
-        if (checkboxDelete.length <= 0) {
-            toast.error("Please Select File", {position: toast.POSITION.TOP_RIGHT, autoClose: 2000})
-            e.preventDefault();
+        if (isCheck.length === 0) {
+            toast.error("Please Select File", { position: toast.POSITION.TOP_RIGHT, autoClose: 2000 })
+            e.preventDefault();            
         } else {
-        e.preventDefault()
             if (window.confirm("Are You Sure")) {
-                
                 dispatch(set_Loader());
-                
-                dispatch(delete_MultipleFile(checkboxDelete));
-        }        
+                dispatch(delete_MultipleFile(isCheck))
+            }            
         }
     }
 
-    const handleChange = (id) => {
-        console.log(id);
-        if (checkboxDelete.includes(id)) {
-            const checkedArray = checkboxDelete.filter((i) => {
-                return i !== id
-            })
-            setCheckboxDelete(checkedArray)
-        } else {
-             setCheckboxDelete([...checkboxDelete, id])
+/////////////////////////// Check and Uncheck All Checkbox ///////////////////////////
+    const handleSelectAll = (e) => {
+        console.log("!isCheckAll", !isCheckAll);
+        setIsCheckAll(!isCheckAll);
+        setIsCheck(uploadFile[0] && uploadFile[0].getPage.length > 0 && uploadFile[0].getPage.map((i) => i._id));
+        if (isCheckAll) {
+            setIsCheck([]);
         }
-    }
+    };
 
+    const handleClick = (e) => {
+        const { id, checked } = e.target;
+        setIsCheck([...isCheck, id]);
+        setIsCheckAll(false)
+        console.log("checked", checked);
+        if (!checked) {
+            setIsCheck(isCheck.filter((item) => item !== id));
+        }
+    };
+    console.log("isCheck", isCheck);
+    
 /////////////////////////// For Get File ///////////////////////////
     useEffect(() => {
         dispatch(get_UploadFile(pageNumber))
-    }, [ loader, pageNumber, dispatch])
+    }, [loader, pageNumber, dispatch])
     
-
-/////////////////////////// For Set Loader ///////////////////////////
-    // useEffect(() => {
-    //     if (loader === false || DeleteUser === true) {
-    //         // setLoaderFile(false)
-    //         dispatch(set_Loader())
-    //     }
-    // }, [loader, DeleteUser, dispatch])
-
+/////////////////////////// Return Function Start ///////////////////////////
     return (
         <>
             <h1>{ LoginUser && (`Welcome ${LoginUser.name}`)}</h1>
@@ -132,12 +129,21 @@ const FileUpload = () => {
                     }
                 </div>    
             </form>
-
-            <form onSubmit={handleMultiDelete}>
-                <div>
-                    <button type='submit' >Delete Selected File</button>
-                </div>
-            </form>
+            
+            <div>
+                {loader ? null :<button className="delete-select" onClick={()=>(handleMultiDelete()) }>Delete Selected File</button>}
+                
+                {loader ? null :<label class="checkbox-checked">
+                        <Checkbox
+                            type="checkbox"
+                            name="selectAll"
+                            id="selectAll"
+                            handleClick={handleSelectAll}
+                            isChecked={isCheckAll}
+                        /><span class="label-text">Select All Checkbox</span>
+                </label>}                    
+            </div>
+            
 
             {
                 loader ? (                     
@@ -151,55 +157,88 @@ const FileUpload = () => {
             <div>
                 {
                     uploadFile[0] && uploadFile[0].getPage.length > 0 && uploadFile[0].getPage.map((elem) => {
-                        return (
-                            <>                                
+                        return (                            
+                            <>  
                                 {elem.fileType === ".pdf" ? (
                                     <>      
-                                            <h6>{elem.fileName}</h6>                                        
-                                            <input type='checkbox' value={elem.public_Id}  onChange={() => handleChange(elem.public_Id) } />                                            
-                                            <img width='4%' src='https://icons.iconarchive.com/icons/graphicloads/filetype/128/pdf-icon.png' alt='PDF' />
-                                            <button className="FileDelete" onClick={() => handleDeleteFile(elem.public_Id)}>Delete</button>
+                                        <h6>{elem.fileName}</h6>
+                                        <img width='4%' src='https://icons.iconarchive.com/icons/graphicloads/filetype/128/pdf-icon.png' alt='PDF' />                                        
+                                        <Checkbox
+                                            key={elem._id}
+                                            type="checkbox"
+                                            name={elem._id}
+                                            id={elem._id}
+                                            handleClick={handleClick}
+                                            isChecked={isCheck.includes(elem._id)}
+                                        />
+                                        <button className="FileDelete" onClick={() => handleDeleteFile(elem.public_Id)}>Delete</button>
                                     </>
                                 ) : null
                                 }
                                 {elem.fileType === ".jpg" || elem.fileType === ".jpeg" || elem.fileType === ".png" || elem.fileType === ".gif" ? (
                                     <>
-                                            <h6>{elem.fileName}</h6>
-                                            <input type='checkbox' value={elem.public_Id}  onChange={() => handleChange(elem.public_Id) } />                                            
-                                            <img width='4%' src={elem.filePath} alt='JPG' />
-                                            <button className="FileDelete" onClick={() => handleDeleteFile(elem.public_Id)}>Delete</button>
+                                        <h6>{elem.fileName}</h6>
+                                        <img width='4%' src={elem.filePath} alt='JPG' />
+                                        <Checkbox
+                                            key={elem._id}
+                                            type="checkbox"
+                                            name={elem._id}
+                                            id={elem._id}
+                                            handleClick={handleClick}
+                                            isChecked={isCheck.includes(elem._id)}
+                                        />
+                                        <button className="FileDelete" onClick={() => handleDeleteFile(elem.public_Id)}>Delete</button>
                                     </>
                                 ) : null
                                 }
                                 {elem.fileType === ".xml" ? (
-                                    <>       
-                                            <h6>{elem.fileName}</h6>
-                                            <input type='checkbox' value={elem.public_Id}  onChange={() =>  handleChange(elem.public_Id) } />                                            
-                                            <img width='4%' src='https://as1.ftcdn.net/v2/jpg/04/46/40/84/1000_F_446408465_aqlGBK2DsZTvhkcDqV6rkaOvvEMtVmau.jpg' alt='XML' />
-                                            <button className="FileDelete" onClick={() => handleDeleteFile(elem.public_Id)}>Delete</button>
+                                    <>      
+                                        <h6>{elem.fileName}</h6> 
+                                        <img width='4%' src='https://as1.ftcdn.net/v2/jpg/04/46/40/84/1000_F_446408465_aqlGBK2DsZTvhkcDqV6rkaOvvEMtVmau.jpg' alt='XML' />
+                                        <Checkbox
+                                            key={elem._id}
+                                            type="checkbox"
+                                            name={elem._id}
+                                            id={elem._id}
+                                            handleClick={handleClick}
+                                            isChecked={isCheck.includes(elem._id)}
+                                        />
+                                        <button className="FileDelete" onClick={() => handleDeleteFile(elem.public_Id)}>Delete</button>
                                     </>
                                 ) : null
                                 }
                                 {elem.fileType === ".txt" ? (
                                     <>
-                                            <h6>{elem.fileName}</h6>
-                                            <input type='checkbox' value={elem.public_Id}  onChange={() =>  handleChange(elem.public_Id) } />                                            
-                                            <img width='4%' src='https://cdn-icons.flaticon.com/png/512/202/premium/202313.png?token=exp=1644907668~hmac=a423c46355a1bdfbeede81a7ebb6cde2' alt='TXT' />
-                                            <button className="FileDelete" onClick={() => handleDeleteFile(elem.public_Id)}>Delete</button>
+                                        <h6>{elem.fileName}</h6>
+                                        <img width='4%' src='https://cdn-icons.flaticon.com/png/512/202/premium/202313.png?token=exp=1644907668~hmac=a423c46355a1bdfbeede81a7ebb6cde2' alt='TXT' />
+                                        <Checkbox
+                                            key={elem._id}
+                                            type="checkbox"
+                                            name={elem._id}
+                                            id={elem._id}
+                                            handleClick={handleClick}
+                                            isChecked={isCheck.includes(elem._id)}
+                                        />
+                                        <button className="FileDelete" onClick={() => handleDeleteFile(elem.public_Id)}>Delete</button>
                                     </>
                                 ) : null
                                 }
                                 {elem.fileType === ".doc" || elem.fileType === ".docx" ? (
                                     <>
-                                            <h6>{elem.fileName}</h6>
-                                            <input type='checkbox' value={elem.public_Id}  onChange={() =>  handleChange(elem.public_Id) } />                                            
-                                            <img width='4%' src='https://cdn4.vectorstock.com/i/1000x1000/62/88/monochrome-round-doc-file-icon-vector-5106288.jpg' alt='TXT' />
-                                            <button className="FileDelete" onClick={() => handleDeleteFile(elem.public_Id)}>Delete</button>
+                                        <h6>{elem.fileName}</h6>
+                                        <img width='4%' src='https://cdn4.vectorstock.com/i/1000x1000/62/88/monochrome-round-doc-file-icon-vector-5106288.jpg' alt='TXT' />                                      
+                                        <Checkbox
+                                            key={elem._id}
+                                            type="checkbox"
+                                            name={elem._id}
+                                            id={elem._id}
+                                            handleClick={handleClick}
+                                            isChecked={isCheck.includes(elem._id)}
+                                        />
+                                        <button className="FileDelete" onClick={() => handleDeleteFile(elem.public_Id)}>Delete</button>
                                     </>
                                 ) : null
-                                }
-                                
-                            
+                                }    
                             </>
                         )
                     })

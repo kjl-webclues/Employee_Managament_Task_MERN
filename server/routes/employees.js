@@ -10,14 +10,9 @@ const State = require('../model/state')
 const City = require('../model/city')
 const authenticate = require("../middleware/checkAuth")
 const bcrypt = require('bcrypt')
-const fs = require('fs')
 const path = require('path')
 const { array } = require('../utils/multer')
 const { log } = require('console')
-// const { uploader } = require('../utils/cloudinary')
-// const { type } = require('os')
-// const { format } = require('path')
-// const { Types } = require('mongoose')
 
 //////////////////////////////// For Upload File ////////////////////////////////
 router.post('/uploadFile', authenticate, upload.array("multi-files"), async (req, res) => {
@@ -129,12 +124,11 @@ router.put('/deleteMultipleFile', authenticate, async (req, res) => {
             // const FileDelete = await cloudinary.uploader.destroy(file, { resource_type: "raw" })
             // console.log("FileDelete", FileDelete);
         
-            const deleteFile = await User.updateOne({ email: req.authenticateUser.email }, { $pull: { Files: { public_Id: file } } })
+            const deleteFile = await User.updateOne({ email: req.authenticateUser.email }, { $pull: { Files: { _id: file } } })
             console.log("deleteFile", deleteFile);
 
         }
         res.send({ msg: "Data Deleted Successfully" })
-
         
     } catch(error) {
         res.status(400).send({error: "File Not Deleted"})

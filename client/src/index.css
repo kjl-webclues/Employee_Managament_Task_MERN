@@ -146,7 +146,7 @@ td {
 margin-left: 5%;
 } */
 
-/* .FileDelete{
+.FileDelete{
   background-color: rgb(226, 73, 73);
   color: white;
   padding: 10px 10px;
@@ -155,9 +155,25 @@ margin-left: 5%;
   cursor: pointer;
   opacity: 0.9;
   font-size: medium;
-  margin-left: 8%;
+  margin-left: 3px;
+}
+
+/* .checkbox-checked{
+  background-color: rgb(226, 73, 73);
+  padding: 5px 5px;
+  color: white;
+  border-radius: 7%;
+  opacity: 0.9;
+  font-size: medium;
 } */
 
-/* .checkbox{
-  margin-top: 10px;
-} */
+.delete-select{
+  background-color: cornflowerblue;
+  padding: 5px 5px;
+  color: white;
+  border-radius: 7%;
+  opacity: 0.9;
+  font-size: medium;
+}
+
+
